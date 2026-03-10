@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+<div th:fragment="content">
+    <style>
+        /* Professional styling for Employee Reviews */
+        .reviews-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            border-left: 6px solid #0f766e;
+            padding-left: 1.5rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 1200px; /* ensures all columns are visible */
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            background: #f8fafd;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: top; /* better for multi-line text */
+            line-height: 1.5;
+        }
+
+        tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        /* Style for long text columns */
+        td:nth-child(2),
+        td:nth-child(3),
+        td:nth-child(6) {
+            max-width: 250px;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        /* Rating numbers as badges */
+        .rating-badge {
+            display: inline-block;
+            min-width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            background: #e6f0ff;
+            color: #1d4ed8;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Action form styling */
+        .review-action-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .form-row label {
+            font-weight: 500;
+            color: #475569;
+            min-width: 45px;
+        }
+
+        select, input[type="text"] {
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.15s;
+            background: white;
+        }
+
+        select {
+            padding: 0.4rem 2rem 0.4rem 1rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: #0f766e;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-submit {
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            align-self: flex-start;
+        }
+
+        .btn-submit:hover {
+            background: #0b5e57;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="reviews-container">
+        <h2>Employee Reviews</h2>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Deliverables</th>
+                        <th>Accomplishments</th>
+                        <th>Self Rating</th>
+                        <th>Manager Rating</th>
+                        <th>Feedback</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="review : ${reviews}">
+                        <td th:text="${review.employee.employeeId}"></td>
+                        <td th:text="${review.deliverables}"></td>
+                        <td th:text="${review.accomplishments}"></td>
+                        <td>
+                            <span class="rating-badge" th:text="${review.selfRating}">4</span>
+                        </td>
+                        <td>
+                            <span class="rating-badge" th:text="${review.managerRating}">1</span>
+                        </td>
+                        <td th:text="${review.managerFeedback}"></td>
+                        <td>
+                            <form th:action="@{'/manager/reviews/evaluate/' + ${review.id}}" method="post" class="review-action-form">
+                                <div class="form-row">
+                                    <label>Rating:</label>
+                                    <select name="managerRating">
+                                        <option value="1" th:selected="${review.managerRating == 1}">1</option>
+                                        <option value="2" th:selected="${review.managerRating == 2}">2</option>
+                                        <option value="3" th:selected="${review.managerRating == 3}">3</option>
+                                        <option value="4" th:selected="${review.managerRating == 4}">4</option>
+                                        <option value="5" th:selected="${review.managerRating == 5}">5</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <input type="text" name="feedback" placeholder="Feedback">
+                                </div>
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-check"></i> Submit
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reviews)}">
+                        <td colspan="7" class="empty-state">No reviews found</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</html>

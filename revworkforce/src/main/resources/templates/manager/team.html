@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+<div th:fragment="content">
+    <style>
+        /* Additional table styling for team members */
+        .team-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .team-header h2 {
+            margin-bottom: 0;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.5);
+            padding: 0.3rem;
+            border-radius: 60px;
+            border: 1px solid rgba(15, 118, 110, 0.2);
+        }
+
+        .search-box input {
+            border: none;
+            background: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            width: 250px;
+            outline: none;
+        }
+
+        .search-box i {
+            align-self: center;
+            margin-left: 0.5rem;
+            color: var(--accent);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15, 118, 110, 0.15);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            background: #f8fafd;
+            color: var(--navy-light);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        .employee-link {
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+
+        .employee-link i {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .employee-link:hover {
+            color: var(--accent-light);
+            transform: translateX(4px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-success {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-danger {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="team-header">
+        <h2>My Team Members</h2>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by name, email, or ID..." id="teamSearch" onkeyup="filterTable()">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table" id="teamTable">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th> <!-- New column -->
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="emp : ${team}">
+                    <td>
+                        <a th:href="@{/manager/team/member/{id}(id=${emp.id})}" 
+                           class="employee-link"
+                           th:text="${emp.employeeId}">
+                            EMP1013
+                        </a>
+                    </td>
+                    <td th:text="${emp.firstName + ' ' + emp.lastName}">Ram Kumar</td> <!-- Full name -->
+                    <td th:text="${emp.email}">ram@rev.com</td>
+                    <td th:text="${emp.phoneNumber}">6582107311</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${emp.status == 'ACTIVE'} ? 'badge-success' : 
+                                              (${emp.status == 'INACTIVE'} ? 'badge-warning' : 'badge-danger')"
+                              th:text="${emp.status}">ACTIVE</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(team)}">
+                    <td colspan="5" class="empty-state">No team members found</td> <!-- Updated colspan -->
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Dynamic filter script (includes name) -->
+    <script>
+        function filterTable() {
+            let query = document.getElementById('teamSearch').value.toLowerCase();
+            let rows = document.querySelectorAll('#teamTable tbody tr');
+            rows.forEach(row => {
+                // Skip the empty state row if present
+                if (row.classList.contains('empty-state')) return;
+                
+                let id = row.cells[0]?.innerText.toLowerCase() || '';
+                let name = row.cells[1]?.innerText.toLowerCase() || ''; // Name column
+                let email = row.cells[2]?.innerText.toLowerCase() || ''; // Email column
+                if (id.includes(query) || name.includes(query) || email.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</div>
+</html>

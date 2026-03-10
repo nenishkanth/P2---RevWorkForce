@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body th:replace="~{layout/manager-base :: layout(~{::content})}">
+
+<div th:fragment="content">
+    <style>
+        /* Custom styling for Manager Dashboard */
+        .manager-dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e6edf5 100%);
+            border-radius: 2rem;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 20px 30px -10px rgba(0,0,0,0.1);
+        }
+
+        /* Headings */
+        .manager-dashboard h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .manager-dashboard h2 span {
+            background: #3b82f6;
+            color: white;
+            font-size: 1.2rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            margin-left: 0.5rem;
+        }
+
+        .manager-dashboard h3 {
+            font-weight: 600;
+            color: #1e293b;
+            border-left: 5px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 2rem 0 1.5rem 0;
+            font-size: 1.6rem;
+        }
+
+        /* Profile section */
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 10px 20px -5px rgba(0, 100, 200, 0.3);
+        }
+
+        .profile-info h3 {
+            margin: 0 0 0.2rem 0;
+            font-size: 1.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .profile-info p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            flex: 1 1 200px;
+            background: white;
+            padding: 1.8rem 1.2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 28px -8px rgba(59,130,246,0.2);
+            border-color: #b1d0ff;
+        }
+
+        .stat-card h4 {
+            color: #475569;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stat-card h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        /* Chart container */
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            margin: 2rem 0;
+        }
+
+        canvas#leaveChart {
+            max-height: 250px;
+            width: 100% !important;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 1.2rem;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+            margin: 1.5rem 0;
+        }
+
+        .table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.2rem;
+            border-bottom: 2px solid #cbd5e1;
+            text-align: center;        /* Center headers */
+            vertical-align: middle;
+        }
+
+        .table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            text-align: center;        /* Center data */
+            vertical-align: middle;
+        }
+
+        /* Optionally left-align specific columns (e.g., Goal description) */
+        .table td:nth-child(2) {       /* Goal column */
+            text-align: left;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+            transition: background-color 0.15s ease;
+        }
+
+        .table td[colspan] {
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+            background: #f8fafc;
+        }
+
+        /* Notifications list */
+        .notifications-list {
+            list-style: none;
+            padding: 0;
+            background: white;
+            border-radius: 1.2rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .notifications-list li {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .notifications-list li:last-child {
+            border-bottom: none;
+        }
+
+        .notifications-list li::before {
+            content: "🔔";
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
+        .notifications-list li:only-child::before {
+            content: "📭";
+        }
+
+        /* Horizontal rule */
+        hr {
+            margin: 2.5rem 0;
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .manager-dashboard {
+                padding: 1rem;
+            }
+            .stats-grid {
+                flex-direction: column;
+            }
+            .stat-card h2 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+
+    <div class="manager-dashboard">
+        <!-- Greeting -->
+        <h2 th:text="'Hi ' + ${manager.firstName} + ' 👋'"></h2>
+
+        <!-- PROFILE SECTION (Single image tag with fallback) -->
+        <div class="profile-section">
+            <!-- Single img tag using Thymeleaf conditional -->
+            <img th:src="${!#strings.isEmpty(manager.profilePic)} ? @{'/uploads/' + ${manager.profilePic}} : '/images/default-user.png'"
+                 class="profile-avatar"
+                 alt="profile">
+            <div class="profile-info">
+                <h3 th:text="${manager.firstName + ' ' + manager.lastName}"></h3>
+                <p>
+                    <i class="bi bi-briefcase-fill" style="color:#3b82f6;"></i>
+                    <span th:text="${manager.designation != null ? manager.designation.name : ''}"></span>
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- STATS CARDS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4><i class="bi bi-people-fill"></i> Team Members</h4>
+                <h2 th:text="${teamSize}"></h2>
+            </div>
+            <div class="stat-card">
+                <h4><i class="bi bi-hourglass-split"></i> Pending Leaves</h4>
+                <h2 th:text="${pendingLeaves}"></h2>
+            </div>
+            <div class="stat-card">
+                <h4><i class="bi bi-check-circle-fill"></i> Approved Leaves</h4>
+                <h2 th:text="${approvedLeaves}"></h2>
+            </div>
+            <div class="stat-card">
+                <h4><i class="bi bi-trophy-fill"></i> Team Goals</h4>
+                <h2 th:text="${teamGoals.size()}"></h2>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- LEAVE CHART -->
+        <h3>Team Leave Distribution</h3>
+        <div class="chart-container">
+            <canvas id="leaveChart" height="120"></canvas>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            let casual = [[${casualLeaves}]];
+            let sick = [[${sickLeaves}]];
+            let paid = [[${paidLeaves}]];
+            const ctx = document.getElementById('leaveChart');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Casual Leave', 'Sick Leave', 'Paid Leave'],
+                    datasets: [{
+                        label: 'Leaves',
+                        data: [casual, sick, paid],
+                        backgroundColor: ['#4CAF50', '#FFC107', '#2196F3'],
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#e9eef3' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        </script>
+
+        <hr>
+
+        <!-- UPCOMING TEAM LEAVES -->
+        <h3>Upcoming Team Leaves</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="leave : ${upcomingLeaves}">
+                    <td th:text="${leave.employee.employeeId}"></td>
+                    <td th:text="${leave.startDate}"></td>
+                    <td th:text="${leave.endDate}"></td>
+                    <td th:text="${leave.leaveType}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(upcomingLeaves)}">
+                    <td colspan="4">No upcoming leaves</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <!-- NOTIFICATIONS -->
+        <h3>Notifications</h3>
+        <ul class="notifications-list">
+            <li th:each="note : ${notifications}">
+                <span th:text="${note.message}"></span>
+            </li>
+            <li th:if="${#lists.isEmpty(notifications)}">
+                No notifications available
+            </li>
+        </ul>
+
+        <hr>
+
+        <!-- TEAM GOALS -->
+        <h3>Team Goals</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Goal</th>
+                    <th>Status</th>
+                    <th>Target Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="goal : ${teamGoals}">
+                    <td th:text="${goal.employee.employeeId}"></td>
+                    <td th:text="${goal.description}"></td>
+                    <td th:text="${goal.status}"></td>
+                    <td th:text="${goal.targetDate}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(teamGoals)}">
+                    <td colspan="4">No goals assigned</td>
+                </tr>
+            </tbody>
+        </table>
+    </div> <!-- end manager-dashboard -->
+</div>
+</body>
+</html>
