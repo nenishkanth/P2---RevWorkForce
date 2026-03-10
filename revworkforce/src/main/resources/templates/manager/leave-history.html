@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+<div th:fragment="content">
+    <style>
+        /* Additional styling for leave history */
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .history-header h2 {
+            margin-bottom: 0;
+        }
+
+        .filter-box {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.5);
+            padding: 0.3rem;
+            border-radius: 60px;
+            border: 1px solid rgba(15, 118, 110, 0.2);
+        }
+
+        .filter-box input {
+            border: none;
+            background: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            width: 250px;
+            outline: none;
+        }
+
+        .filter-box i {
+            align-self: center;
+            margin-left: 0.5rem;
+            color: var(--accent);
+        }
+
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--accent-light);
+            transform: translateX(-4px);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15, 118, 110, 0.15);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 900px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            background: #f8fafd;
+            color: var(--navy-light);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        .employee-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .employee-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-approved {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-rejected {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .badge-cancelled {
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        .comment-cell {
+            max-width: 250px;
+            white-space: normal;
+            word-break: break-word;
+            color: #334155;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="history-header">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <a href="/manager/leaves" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Requests
+            </a>
+            <h2>Leave History</h2>
+        </div>
+        <div class="filter-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Filter by employee or status..." id="historySearch" onkeyup="filterHistory()">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table" id="historyTable">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Manager Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="leave : ${leaves}"
+                    th:if="${leave.status != 'PENDING'}">
+                    <td>
+                        <div class="employee-info">
+                            <span class="employee-name" 
+                                  th:text="${leave.employee.firstName + ' ' + leave.employee.lastName}">John Doe</span>
+                            <span class="employee-id" th:text="${leave.employee.employeeId}">EMP1013</span>
+                        </div>
+                    </td>
+                    <td th:text="${leave.startDate}">2026-03-09</td>
+                    <td th:text="${leave.endDate}">2026-03-09</td>
+                    <td th:text="${leave.leaveType}">CASUAL</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${leave.status == 'APPROVED'} ? 'badge-approved' : 
+                                              (${leave.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled')"
+                              th:text="${leave.status}">APPROVED</span>
+                    </td>
+                    <td class="comment-cell" th:text="${leave.managerComments ?: '—'}">okay enjoy</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(leaves)}">
+                    <td colspan="6" class="empty-state">No leave history found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Dynamic filter script -->
+    <script>
+        function filterHistory() {
+            let query = document.getElementById('historySearch').value.toLowerCase();
+            let rows = document.querySelectorAll('#historyTable tbody tr');
+            rows.forEach(row => {
+                // Skip empty state row
+                if (row.classList.contains('empty-state')) return;
+                
+                let employeeCell = row.cells[0]?.innerText.toLowerCase() || '';
+                let statusCell = row.cells[4]?.innerText.toLowerCase() || '';
+                if (employeeCell.includes(query) || statusCell.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</div>
+</html>

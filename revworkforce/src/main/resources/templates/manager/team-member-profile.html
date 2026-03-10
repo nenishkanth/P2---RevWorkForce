@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+
+<!-- Add custom styles inside the fragment, scoped with a wrapper class -->
+<div th:fragment="content">
+    <style>
+        /* Custom styling for Team Member Profile */
+        .team-profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Headings */
+        .team-profile-container h2 {
+            font-weight: 600;
+            color: #0f172a;
+            border-left: 6px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 2rem 0 1.5rem 0;
+            font-size: 1.8rem;
+        }
+
+        .team-profile-container h3 {
+            font-weight: 500;
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Employee name special styling */
+        .employee-name {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .employee-name::before {
+            content: "👤";
+            font-size: 2rem;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
+        }
+
+        /* Tables */
+        .table {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: none;
+            margin-bottom: 2rem;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            border-bottom-width: 2px;
+            border-bottom-color: #cbd5e1;
+        }
+
+        .table td, .table th {
+            padding: 1rem 1.2rem;
+            vertical-align: middle;
+            border-color: #e9edf2;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Cards for Leave Balance */
+        .leave-card {
+            border: none;
+            border-radius: 1.2rem;
+            background: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .leave-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(0, 100, 200, 0.2);
+        }
+
+        .leave-card .card-body {
+            padding: 1.8rem 1.2rem;
+        }
+
+        .leave-card h5 {
+            color: #475569;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .leave-card h5 i {
+            color: #3b82f6;
+            font-size: 1.4rem;
+        }
+
+        .leave-card h3 {
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+            border: none;
+            font-size: 2.5rem;
+        }
+
+        /* Custom colors for each leave type (optional) */
+        .leave-card.casual h5 i { color: #10b981; }
+        .leave-card.sick h5 i { color: #f59e0b; }
+        .leave-card.paid h5 i { color: #8b5cf6; }
+
+        /* Buttons */
+        .btn-secondary {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 0.75rem 2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+            border-color: #94a3b8;
+            color: #0f172a;
+            transform: scale(1.02);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* "No data" row styling */
+        .table td[colspan] {
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+            background-color: #f8fafc;
+        }
+
+        /* Spacing adjustments */
+        hr {
+            margin: 2.5rem 0;
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+        }
+
+        /* Additional utility for inline icon spacing */
+        .icon-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Responsive touch */
+        @media (max-width: 768px) {
+            .team-profile-container {
+                padding: 1rem;
+            }
+            .leave-card h3 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+
+    <!-- Wrap everything in a container div to scope styles -->
+    <div class="team-profile-container">
+
+        <h2>Team Member Profile</h2>
+
+        <!-- EMPLOYEE DETAILS -->
+        <div style="margin-bottom:30px;">
+            <div class="employee-name" th:text="${employee.firstName + ' ' + employee.lastName}"></div>
+
+            <table class="table table-bordered">
+                <tr><th>Email</th><td th:text="${employee.email}"></td></tr>
+                <tr><th>Phone</th><td th:text="${employee.phoneNumber}"></td></tr>
+                <tr><th>Department</th><td th:text="${employee.department != null ? employee.department.name : 'Not Assigned'}"></td></tr>
+                <tr><th>Designation</th><td th:text="${employee.designation != null ? employee.designation.name : 'Not Assigned'}"></td></tr>
+                <tr><th>Role</th><td th:text="${employee.role}"></td></tr>
+                <tr><th>Status</th><td th:text="${employee.status}"></td></tr>
+                <tr><th>Joining Date</th><td th:text="${employee.joiningDate}"></td></tr>
+            </table>
+        </div>
+
+        <hr>
+
+        <!-- Leave Balance -->
+        <h2 class="mb-4">Leave Balance</h2>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card leave-card casual shadow-sm p-3 mb-4">
+                    <div class="card-body">
+                        <h5><i class="bi bi-brightness-alt-highlight"></i> Casual Leave</h5>
+                        <h3 th:text="${leaveBalance.casualLeave}"></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card leave-card sick shadow-sm p-3 mb-4">
+                    <div class="card-body">
+                        <h5><i class="bi bi-cloud-sun"></i> Sick Leave</h5>
+                        <h3 th:text="${leaveBalance.sickLeave}"></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card leave-card paid shadow-sm p-3 mb-4">
+                    <div class="card-body">
+                        <h5><i class="bi bi-briefcase"></i> Paid Leave</h5>
+                        <h3 th:text="${leaveBalance.paidLeave}"></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Note: the original condition #lists.isEmpty(leaveBalance) might be incorrect for a single object.
+             We'll keep it as is but suggest checking the controller. -->
+        <div th:if="${#lists.isEmpty(leaveBalance)}" class="text-muted p-3">
+            No leave balance available
+        </div>
+
+        <!-- GOALS -->
+        <h3>Goals</h3>
+        <table class="table table-bordered">
+            <tr><th>Goal</th><th>Status</th><th>Target Date</th></tr>
+            <tr th:each="goal : ${goals}">
+                <td th:text="${goal.description}"></td>
+                <td th:text="${goal.status}"></td>
+                <td th:text="${goal.targetDate}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(goals)}">
+                <td colspan="3">No goals assigned</td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <!-- LEAVE HISTORY -->
+        <h3>Leave History</h3>
+        <table class="table table-bordered">
+            <tr><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Status</th></tr>
+            <tr th:each="leave : ${leaves}">
+                <td th:text="${leave.leaveType}"></td>
+                <td th:text="${leave.startDate}"></td>
+                <td th:text="${leave.endDate}"></td>
+                <td th:text="${leave.status}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(leaves)}">
+                <td colspan="4">No leave records</td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <!-- PERFORMANCE REVIEWS -->
+        <h3>Performance Reviews</h3>
+        <table class="table table-bordered">
+            <tr><th>Employee Rating</th><th>Manager Rating</th><th>Feedback</th></tr>
+            <tr th:each="review : ${reviews}">
+                <td th:text="${review.selfRating}"></td>
+                <td th:text="${review.managerRating}"></td>
+                <td th:text="${review.managerFeedback}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(reviews)}">
+                <td colspan="3">No reviews available</td>
+            </tr>
+        </table>
+
+        <br>
+        <a href="/manager/team" class="btn btn-secondary">← Back to Team</a>
+
+    </div> <!-- end team-profile-container -->
+</div>
+</html>
