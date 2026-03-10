@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .content-wrapper {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* form styling */
+        .announcement-form {
+            background: #f8fafd;
+            border-radius: 24px;
+            padding: 1.5rem 2rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.95rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: white;
+            transition: all 0.15s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b7cff;
+            border-color: #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        /* announcement cards */
+        .announcement-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .announcement-card:hover {
+            border-color: #d0d9e8;
+            box-shadow: 0 8px 20px -6px rgba(0, 34, 64, 0.12);
+        }
+
+        .announcement-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .announcement-message {
+            font-size: 1rem;
+            color: #334155;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        /* spacing utilities */
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    <div class="content-wrapper">
+        <h2>Announcement Management</h2>
+
+        <!-- Post Announcement Form -->
+        <div class="announcement-form">
+            <form th:action="@{/admin/announcements}" method="post">
+                <div class="form-group">
+                    <input type="text" name="title" placeholder="Title" class="form-control">
+                </div>
+                <div class="form-group">
+                    <textarea name="message" placeholder="Announcement Message" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Announcement</button>
+            </form>
+        </div>
+
+        <!-- Announcements List -->
+        <div th:each="a : ${announcements}" class="announcement-card">
+            <div class="announcement-title" th:text="${a.title}"></div>
+            <div class="announcement-message" th:text="${a.content}"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(announcements)}" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">
+            No announcements yet.
+        </div>
+    </div>
+</div>
+</body>
+</html>

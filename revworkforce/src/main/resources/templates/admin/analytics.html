@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        .analytics-wrapper h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.75rem;
+            letter-spacing: -0.01em;
+            border-left: none !important;
+            padding-left: 0 !important;
+        }
+        .analytics-wrapper h2::after { display: none !important; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .metric-card {
+            border-radius: 24px;
+            padding: 1.5rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .metric-card:hover { transform: translateY(-5px); }
+        .metric-card:hover::before { opacity: 1; }
+
+        .card-employees     { background: linear-gradient(135deg, #3b7cff, #1e4db9); box-shadow: 0 10px 30px -5px rgba(59,124,255,0.4); }
+        .card-leaves        { background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 10px 30px -5px rgba(16,185,129,0.4); }
+        .card-announcements { background: linear-gradient(135deg, #f59e0b, #b45309); box-shadow: 0 10px 30px -5px rgba(245,158,11,0.4); }
+        .card-holidays      { background: linear-gradient(135deg, #ef4444, #991b1b); box-shadow: 0 10px 30px -5px rgba(239,68,68,0.4); }
+
+        .metric-icon  { font-size: 2.5rem; line-height: 1; margin-bottom: 1rem; opacity: 0.9; }
+        .metric-label { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; margin-bottom: 0.25rem; }
+        .metric-value { font-size: 2.5rem; font-weight: 700; line-height: 1.2; }
+        .metric-sub   { font-size: 0.8rem; opacity: 0.75; margin-top: 0.35rem; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            min-height: 300px;
+        }
+        .chart-card:hover { box-shadow: 0 12px 24px -8px rgba(0,34,64,0.1); }
+
+        .chart-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .chart-badge {
+            background: #e6f0ff;
+            color: #3b7cff;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+        .chart-canvas-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 220px;
+        }
+        .chart-canvas-wrapper canvas {
+            position: absolute !important;
+            top: 0; left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 900px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid  { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 500px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <!--
+        Embed all chart data as JSON into hidden <span> elements.
+        Thymeleaf processes th:text server-side, so the JSON is safely
+        written into the DOM — no inline JS parsing issues at all.
+    -->
+    <span id="data-leavesByStatus" th:attr="data-json=${#strings.toString(leavesByStatus)}" style="display:none"></span>
+    <span id="data-leavesByType"   th:attr="data-json=${#strings.toString(leavesByType)}"   style="display:none"></span>
+    <span id="data-leavesByDept"   th:attr="data-json=${#strings.toString(leavesByDept)}"   style="display:none"></span>
+
+    <!--
+        monthlyTrend is a long[12] array — serialize it as a JSON array via th:inline
+        in a tiny dedicated script block (no loops, just a single inline expression).
+    -->
+    <script th:inline="javascript">
+        var _monthlyTrend = /*[[${monthlyTrend}]]*/ [0,0,0,0,0,0,0,0,0,0,0,0];
+    </script>
+
+    <div class="analytics-wrapper">
+        <h2>System Analytics</h2>
+
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card card-employees">
+                <div class="metric-icon">&#128101;</div>
+                <div class="metric-label">Total Employees</div>
+                <div class="metric-value" th:text="${employeeCount}">0</div>
+                <div class="metric-sub">Active workforce</div>
+            </div>
+            <div class="metric-card card-leaves">
+                <div class="metric-icon">&#128197;</div>
+                <div class="metric-label">Total Leaves</div>
+                <div class="metric-value" th:text="${leaveCount}">0</div>
+                <div class="metric-sub">All time</div>
+            </div>
+            <div class="metric-card card-announcements">
+                <div class="metric-icon">&#128226;</div>
+                <div class="metric-label">Announcements</div>
+                <div class="metric-value" th:text="${announcementCount}">0</div>
+                <div class="metric-sub">Total posted</div>
+            </div>
+            <div class="metric-card card-holidays">
+                <div class="metric-icon">&#127881;</div>
+                <div class="metric-label">Holidays</div>
+                <div class="metric-value" th:text="${holidayCount}">0</div>
+                <div class="metric-sub">Scheduled</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Leaves by Status <span class="chart-badge">all time</span></div>
+                <div class="chart-canvas-wrapper"><canvas id="leavesByStatusChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Leaves by Type <span class="chart-badge">all time</span></div>
+                <div class="chart-canvas-wrapper"><canvas id="leavesByTypeChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Monthly Leave Trend <span class="chart-badge">current year</span></div>
+                <div class="chart-canvas-wrapper"><canvas id="monthlyTrendChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Leaves by Department <span class="chart-badge">all time</span></div>
+                <div class="chart-canvas-wrapper"><canvas id="deptChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    /**
+     * Parse a Java Map.toString() like "{APPROVED=2, PENDING=1}" into
+     * separate labels[] and data[] arrays.
+     */
+    function parseJavaMap(raw) {
+        var labels = [], values = [];
+        if (!raw || raw === '{}') return { labels: labels, values: values };
+        // strip braces
+        var inner = raw.replace(/^\{/, '').replace(/\}$/, '');
+        // split on ", " but only where the next token is "word="
+        var pairs = inner.split(/,\s*(?=[A-Za-z0-9_ ]+\s*=)/);
+        pairs.forEach(function(pair) {
+            var idx = pair.lastIndexOf('=');
+            if (idx === -1) return;
+            labels.push(pair.substring(0, idx).trim());
+            values.push(Number(pair.substring(idx + 1).trim()));
+        });
+        return { labels: labels, values: values };
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var statusRaw = document.getElementById('data-leavesByStatus').getAttribute('data-json') || '{}';
+        var typeRaw   = document.getElementById('data-leavesByType').getAttribute('data-json')   || '{}';
+        var deptRaw   = document.getElementById('data-leavesByDept').getAttribute('data-json')   || '{}';
+
+        var statusParsed = parseJavaMap(statusRaw);
+        var typeParsed   = parseJavaMap(typeRaw);
+        var deptParsed   = parseJavaMap(deptRaw);
+
+        // ── 1. Leaves by Status — Doughnut ──
+        var statusColorMap = { APPROVED:'#10b981', PENDING:'#f59e0b', REJECTED:'#ef4444', CANCELLED:'#94a3b8' };
+        var statusColors = statusParsed.labels.map(function(l){ return statusColorMap[l] || '#cbd5e1'; });
+
+        new Chart(document.getElementById('leavesByStatusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: statusParsed.labels.length ? statusParsed.labels : ['No Data'],
+                datasets: [{
+                    data:  statusParsed.values.length ? statusParsed.values : [1],
+                    backgroundColor: statusColors.length ? statusColors : ['#e2e8f0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '60%'
+            }
+        });
+
+        // ── 2. Leaves by Type — Bar ──
+        var typeColorMap = { CASUAL:'#3b7cff', SICK:'#10b981', PAID:'#f59e0b' };
+        var typeColors = typeParsed.labels.map(function(l){ return typeColorMap[l] || '#94a3b8'; });
+
+        new Chart(document.getElementById('leavesByTypeChart'), {
+            type: 'bar',
+            data: {
+                labels: typeParsed.labels.length ? typeParsed.labels : ['No Data'],
+                datasets: [{
+                    label: 'Leaves',
+                    data:  typeParsed.values.length ? typeParsed.values : [0],
+                    backgroundColor: typeColors.length ? typeColors : ['#e2e8f0'],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        // ── 3. Monthly Trend — Line ──
+        var monthNames  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var monthValues = (typeof _monthlyTrend !== 'undefined') ? Array.from(_monthlyTrend) : new Array(12).fill(0);
+
+        new Chart(document.getElementById('monthlyTrendChart'), {
+            type: 'line',
+            data: {
+                labels: monthNames,
+                datasets: [{
+                    label: 'Leaves',
+                    data: monthValues,
+                    borderColor: '#3b7cff',
+                    backgroundColor: 'rgba(59,124,255,0.08)',
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#3b7cff',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        // ── 4. Leaves by Department — Horizontal Bar ──
+        new Chart(document.getElementById('deptChart'), {
+            type: 'bar',
+            data: {
+                labels: deptParsed.labels.length ? deptParsed.labels : ['No Data'],
+                datasets: [{
+                    label: 'Leaves',
+                    data:  deptParsed.values.length ? deptParsed.values : [0],
+                    backgroundColor: 'rgba(99,102,241,0.75)',
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+    });
+    </script>
+</div>
+</body>
+</html>

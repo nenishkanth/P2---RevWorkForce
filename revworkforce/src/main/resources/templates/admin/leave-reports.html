@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        /* Override admin-base h2 for this page */
+        .reports-wrapper h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            border-left: none !important;
+            padding-left: 0 !important;
+        }
+        .reports-wrapper h2::after { display: none !important; }
+
+        .reports-wrapper h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 2rem 0 1rem 0;
+        }
+
+        /* filter / generate form */
+        .generate-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            background: #f8fafd;
+            padding: 1.25rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .generate-form select {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 0.6rem 2rem 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.15s;
+            min-width: 260px;
+            flex: 1 1 auto;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 14px;
+        }
+
+        .generate-form select:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b7cff;
+            border: 1px solid #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+            margin: 1.5rem 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 600px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8fafd;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td { background-color: #fafcff; }
+
+        .empty-row td {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .badge-approved   { background: #d1fae5; color: #065f46; }
+        .badge-pending    { background: #fef3c7; color: #92400e; }
+        .badge-rejected   { background: #fee2e2; color: #991b1b; }
+        .badge-cancelled  { background: #f1f5f9; color: #475569; }
+
+        /* Chart containers — FIX: use positioned wrapper with explicit height */
+        .chart-container {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            /* FIX: give the container a real height */
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FIX: positioned wrapper so Chart.js can measure dimensions */
+        .chart-canvas-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 220px;
+        }
+
+        .chart-canvas-wrapper canvas {
+            position: absolute !important;
+            top: 0; left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #eef2f6;
+            margin: 2rem 0;
+        }
+    </style>
+
+    <div class="reports-wrapper">
+        <h2>Leave Analytics Dashboard</h2>
+
+        <!-- Generate Employee Leave Report -->
+        <h3>Generate Employee Leave Report</h3>
+
+        <form method="get" action="/admin/reports/leaves" class="generate-form">
+            <select name="employeeId">
+                <option value="">Select Employee</option>
+                <option th:each="e : ${employees}"
+                        th:value="${e.id}"
+                        th:text="${e.employeeId + ' - ' + e.firstName + ' ' + e.lastName}">
+                </option>
+            </select>
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+        </form>
+
+        <!-- Employee Leave Report Table -->
+        <div th:if="${employeeLeaves != null}">
+            <h3>Employee Leave Report</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="leave : ${employeeLeaves}">
+                            <td th:text="${leave.leaveType}"></td>
+                            <td th:text="${leave.startDate}"></td>
+                            <td th:text="${leave.endDate}"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${leave.status == 'APPROVED'} ? 'badge-approved' :
+                                                      (${leave.status == 'PENDING'} ? 'badge-pending' :
+                                                      (${leave.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                                      th:text="${leave.status}">
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(employeeLeaves)}" class="empty-row">
+                            <td colspan="4">No leave records found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Department Leave Distribution -->
+        <h3>Department Leave Distribution</h3>
+        <div class="chart-container">
+            <div class="chart-canvas-wrapper">
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Monthly Leave Trend -->
+        <h3>Monthly Leave Trend</h3>
+        <div class="chart-container">
+            <div class="chart-canvas-wrapper">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIX: Chart.js loaded AFTER canvas elements and BEFORE init scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FIX: DOMContentLoaded + maintainAspectRatio:false so charts fill their wrapper -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+
+            /* =============================== */
+            /* Department Chart                */
+            /* =============================== */
+            var deptLabels = [];
+            var deptData   = [];
+
+            [# th:each="r : ${departmentReport}"]
+                deptLabels.push("[[${r[0]}]]");
+                deptData.push([[${r[1]}]]);
+            [/]
+
+            var deptCtx = document.getElementById('departmentChart');
+            if (deptCtx) {
+                new Chart(deptCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: deptLabels.length > 0 ? deptLabels : ['No Data'],
+                        datasets: [{
+                            label: 'Total Leaves',
+                            data: deptData.length > 0 ? deptData : [0],
+                            backgroundColor: 'rgba(59, 124, 255, 0.7)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            /* =============================== */
+            /* Monthly Leave Chart             */
+            /* =============================== */
+            var monthLabels = [];
+            var monthData   = [];
+
+            [# th:each="r : ${monthlyReport}"]
+                monthLabels.push("Month " + [[${r[0]}]]);
+                monthData.push([[${r[1]}]]);
+            [/]
+
+            var monthCtx = document.getElementById('monthlyChart');
+            if (monthCtx) {
+                new Chart(monthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthLabels.length > 0 ? monthLabels : ['No Data'],
+                        datasets: [{
+                            label: 'Leaves',
+                            data: monthData.length > 0 ? monthData : [0],
+                            borderColor: '#3b7cff',
+                            backgroundColor: 'rgba(59, 124, 255, 0.1)',
+                            tension: 0.2,
+                            fill: true,
+                            pointBackgroundColor: '#3b7cff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .content-wrapper {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* filter form */
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            background: #f8fafd;
+            padding: 1.25rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-form select,
+        .filter-form input[type="date"] {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 0.6rem 1.5rem 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.15s;
+            min-width: 140px;
+            flex: 1 0 auto;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 14px;
+        }
+
+        .filter-form input[type="date"] {
+            background-image: none;
+            padding-right: 1rem;
+        }
+
+        .filter-form select:focus,
+        .filter-form input[type="date"]:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+        }
+
+        .filter-form label {
+            font-weight: 500;
+            color: #475569;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            text-decoration: none;
+            background: white;
+            color: #1e293b;
+            border-color: #e2e8f0;
+        }
+
+        .btn-primary {
+            background: #3b7cff;
+            border-color: #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        /* table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+            margin-top: 1.5rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 800px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1rem 1rem;
+            background: #f8fafd;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1rem 1rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #fafcff;
+        }
+
+        /* status badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-approved {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-rejected {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .badge-cancelled {
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        /* empty state */
+        .empty-row td {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="content-wrapper">
+        <h2>Employee Leave Records</h2>
+
+        <!-- Filter Form -->
+        <form method="get" action="/admin/leaves" class="filter-form">
+            <select name="status">
+                <option value="">All Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+
+            <select name="type">
+                <option value="">All Leave Types</option>
+                <option value="CASUAL">Casual</option>
+                <option value="SICK">Sick</option>
+                <option value="PAID">Paid</option>
+            </select>
+
+            <select name="departmentId">
+                <option value="">All Departments</option>
+                <option th:each="d : ${departments}"
+                        th:value="${d.id}"
+                        th:text="${d.name}">
+                </option>
+            </select>
+
+            <select name="employeeId">
+                <option value="">All Employees</option>
+                <option th:each="e : ${employees}"
+                        th:value="${e.id}"
+                        th:text="${e.firstName + ' ' + e.lastName}">
+                </option>
+            </select>
+
+            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                <label>Start Date</label>
+                <input type="date" name="startDate">
+            </span>
+
+            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                <label>End Date</label>
+                <input type="date" name="endDate">
+            </span>
+
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="/admin/leaves" class="btn btn-secondary">Clear</a>
+        </form>
+
+        <!-- Leave Table -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Leave Type</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="leave : ${leaves}">
+                    <td th:text="${leave.employee.firstName + ' ' + leave.employee.lastName}"></td>
+                    <td th:text="${leave.employee.department != null ? leave.employee.department.name : 'Not Assigned'}"></td>
+                    <td th:text="${leave.leaveType}"></td>
+                    <td th:text="${leave.startDate}"></td>
+                    <td th:text="${leave.endDate}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${leave.status == 'APPROVED'} ? 'badge-approved' : 
+                                              (${leave.status == 'PENDING'} ? 'badge-pending' : 
+                                              (${leave.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                              th:text="${leave.status}">
+                        </span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(leaves)}" class="empty-row">
+                    <td colspan="6">No leave records found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
