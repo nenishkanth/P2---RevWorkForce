@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/employee-base :: layout(~{::content})}">
+
+<div th:fragment="content">
+
+<style>
+
+.manager-container{
+    max-width:700px;
+    margin:auto;
+}
+
+.manager-card{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+h2{
+    border-left:6px solid #0f766e;
+    padding-left:12px;
+    margin-bottom:25px;
+}
+
+.detail{
+    margin-bottom:15px;
+}
+
+.label{
+    font-size:13px;
+    color:#64748b;
+}
+
+.value{
+    font-size:16px;
+    font-weight:500;
+}
+
+.profile-img{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    margin-bottom:20px;
+}
+
+.placeholder{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:#0f766e;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:40px;
+    margin-bottom:20px;
+}
+
+</style>
+
+<div class="manager-container">
+
+<h2>My Manager</h2>
+
+<div class="manager-card">
+
+<div style="text-align:center">
+
+<div th:if="${manager.profilePic != null}">
+<img th:src="@{'/uploads/' + ${manager.profilePic}}" class="profile-img">
+</div>
+
+<div th:if="${manager.profilePic == null}" class="placeholder">
+<span th:text="${#strings.substring(manager.firstName,0,1)}"></span>
+</div>
+
+</div>
+
+
+<div class="detail">
+<div class="label">Employee ID</div>
+<div class="value" th:text="${manager.employeeId}"></div>
+</div>
+
+<div class="detail">
+<div class="label">Name</div>
+<div class="value" th:text="${manager.firstName + ' ' + manager.lastName}"></div>
+</div>
+
+<div class="detail">
+<div class="label">Email</div>
+<div class="value" th:text="${manager.email}"></div>
+</div>
+
+<div class="detail">
+<div class="label">Phone</div>
+<div class="value" th:text="${manager.phoneNumber}"></div>
+</div>
+
+<div class="detail">
+<div class="label">Department</div>
+<div class="value"
+     th:text="${manager.department != null ? manager.department.name : 'Not Assigned'}">
+</div>
+</div>
+
+<div class="detail">
+<div class="label">Designation</div>
+<div class="value"
+     th:text="${manager.designation != null ? manager.designation.name : 'Not Assigned'}">
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</html>
