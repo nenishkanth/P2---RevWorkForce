@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="content">
+    <style>
+        /* Professional styling for Announcements */
+        .announcements-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 2rem;
+            letter-spacing: -0.01em;
+            border-left: 6px solid #0f766e;
+            padding-left: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05);
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .announcement-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 20px -6px rgba(0, 34, 64, 0.08);
+            border: 1px solid #edf2f7;
+            transition: all 0.2s ease;
+            position: relative;
+            border-left: 4px solid #0f766e;
+        }
+
+        .announcement-card:hover {
+            box-shadow: 0 20px 30px -10px rgba(15, 118, 110, 0.15);
+            transform: translateY(-2px);
+            border-color: rgba(15, 118, 110, 0.3);
+        }
+
+        .announcement-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .announcement-title i {
+            color: #0f766e;
+            font-size: 1.4rem;
+        }
+
+        .announcement-content {
+            font-size: 1rem;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+            white-space: pre-line;
+        }
+
+        .announcement-date {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: #64748b;
+            border-top: 1px solid #eef2f6;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .announcement-date i {
+            color: #0f766e;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .announcement-card {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+
+    <!-- Font Awesome for icons (if not already included in layout) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <div class="announcements-container">
+        <h2>Company Announcements</h2>
+
+        <div th:if="${#lists.isEmpty(announcements)}" class="empty-state">
+            <i class="fas fa-bullhorn" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>No announcements available</p>
+        </div>
+
+        <div th:each="a : ${announcements}" class="announcement-card">
+            <div class="announcement-title">
+                <i class="fas fa-bullhorn"></i>
+                <span th:text="${a.title}">Announcement Title</span>
+            </div>
+            <div class="announcement-content" th:text="${a.content}">Announcement content goes here...</div>
+            <div class="announcement-date">
+                <i class="far fa-calendar-alt"></i>
+                <span th:text="${a.createdAt}">2025-03-07</span>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

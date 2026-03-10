@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="content">
+    <style>
+        /* Professional styling for Company Holidays */
+        .holidays-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            border-left: 6px solid #0f766e;
+            padding-left: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: #f8fafd;
+            border-radius: 20px;
+            color: #64748b;
+            font-style: italic;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 400px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            background: #f8fafd;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        /* Holiday date styling */
+        .holiday-date {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .holiday-name {
+            font-weight: 500;
+            color: #0f766e;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .holidays-container {
+                padding: 1.5rem;
+            }
+            .table th, .table td {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <!-- Font Awesome for icons (if not already in layout) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <div class="holidays-container">
+        <h2>Company Holidays</h2>
+
+        <div th:if="${#lists.isEmpty(holidays)}" class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <p>No holidays configured</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(holidays)}" class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Holiday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="h : ${holidays}">
+                        <td class="holiday-date" th:text="${h.date}">2025-12-25</td>
+                        <td class="holiday-name" th:text="${h.name}">Christmas Day</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</html>

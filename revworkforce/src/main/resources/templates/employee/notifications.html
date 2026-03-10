@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/employee-base :: layout(~{::content})">
+
+<div th:fragment="content">
+    <style>
+        /* Additional styling for Notifications – consistent with global premium design */
+        .notifications-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Unread count highlight */
+        .unread-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            margin-left: 0.5rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(15, 118, 110, 0.3);
+        }
+
+        /* Notifications table */
+        .notifications-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        .notifications-table thead th {
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--navy);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 14px 14px 0 0;
+            white-space: nowrap;
+        }
+
+        .notifications-table tbody tr {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+
+        .notifications-table tbody tr:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            transform: scale(1.01);
+        }
+
+        .notifications-table tbody td {
+            padding: 1.2rem 1.5rem;
+            border: none;
+            font-size: 0.95rem;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .notifications-table tbody td:first-child {
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+        }
+
+        .notifications-table tbody td:last-child {
+            border-top-right-radius: 18px;
+            border-bottom-right-radius: 18px;
+        }
+
+        /* Status badges for notifications */
+        .notification-status {
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .notification-status.read {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .notification-status.unread {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 0 0.25rem;
+            display: inline-block;
+        }
+
+        .mark-read-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .mark-read-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(15, 118, 110, 0.3);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: 1px solid #f87171;
+            color: #b91c1c;
+        }
+
+        .delete-btn:hover {
+            background: #f87171;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(248, 113, 113, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .notifications-table thead {
+                display: none;
+            }
+            .notifications-table tbody tr {
+                display: block;
+                margin-bottom: 1.5rem;
+            }
+            .notifications-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.8rem 1rem;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .notifications-table tbody td:last-child {
+                border-bottom: none;
+            }
+            .notifications-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #475569;
+                width: 40%;
+            }
+        }
+    </style>
+
+    <div class="notifications-container">
+        <h2>Notifications</h2>
+
+        <!-- Unread count -->
+        <p style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            Unread Notifications:
+            <strong class="unread-badge" th:text="${unreadCount}">0</strong>
+        </p>
+
+        <!-- Notifications table -->
+        <table class="notifications-table">
+            <thead>
+                <tr>
+                    <th>Message</th>
+                    <th>Created At</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="n : ${notifications}">
+                    <td data-label="Message" th:text="${n.message}">Notification message</td>
+                    <td data-label="Created At" th:text="${n.createdAt}">2025-03-07 10:30</td>
+                    <td data-label="Status">
+                        <span class="notification-status"
+                              th:classappend="${n.read} ? 'read' : 'unread'"
+                              th:text="${n.read} ? 'Read' : 'Unread'">
+                            Unread
+                        </span>
+                    </td>
+                    <td data-label="Actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <!-- Mark Read button (only if unread) -->
+                        <form th:if="${!n.read}"
+                              th:action="@{'/employee/notifications/read/' + ${n.id}}"
+                              method="post"
+                              style="display: inline;">
+                            <button type="submit" class="action-btn mark-read-btn">✓ Mark Read</button>
+                        </form>
+
+                        <!-- Delete button (always visible) -->
+                        <form th:action="@{'/employee/notifications/delete/' + ${n.id}}"
+                              method="post"
+                              style="display: inline;">
+                            <button type="submit" class="action-btn delete-btn">✕ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>
