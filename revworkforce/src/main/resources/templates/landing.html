@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RevWorkForce — Modern Workforce Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --teal:       #0f766e;
+  --teal-light: #2dd4bf;
+  --teal-glow:  rgba(45,212,191,0.18);
+  --navy:       #071525;
+  --navy-2:     #0d2035;
+  --navy-3:     #112844;
+  --white:      #f0f7ff;
+  --muted:      #7fa4c0;
+  --card-bg:    rgba(13,32,53,0.75);
+  --font-head:  'Syne', sans-serif;
+  --font-body:  'DM Sans', sans-serif;
+  --ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--navy);
+  color: var(--white);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ===== ANIMATED MESH BACKGROUND ===== */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-mesh::before {
+  content: '';
+  position: absolute;
+  width: 900px; height: 900px;
+  background: radial-gradient(circle, rgba(15,118,110,0.22) 0%, transparent 65%);
+  top: -200px; left: -200px;
+  animation: drift1 18s infinite alternate var(--ease);
+}
+
+.bg-mesh::after {
+  content: '';
+  position: absolute;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 60%);
+  bottom: -150px; right: -150px;
+  animation: drift2 22s infinite alternate var(--ease);
+}
+
+.bg-orb {
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(15,118,110,0.10) 0%, transparent 65%);
+  top: 50%; left: 55%;
+  transform: translate(-50%, -50%);
+  animation: drift3 28s infinite alternate var(--ease);
+}
+
+/* Grid overlay */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(45,212,191,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,212,191,0.035) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+@keyframes drift1 {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(80px, 60px) scale(1.15); }
+}
+@keyframes drift2 {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(-60px, -80px) scale(1.2); }
+}
+@keyframes drift3 {
+  from { transform: translate(-50%,-50%) scale(0.9); }
+  to   { transform: translate(-40%,-60%) scale(1.1); }
+}
+
+/* ===== NAVBAR ===== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 3rem;
+  background: rgba(7,21,37,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(45,212,191,0.1);
+  transition: all 0.3s;
+}
+
+.nav-brand {
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, var(--teal-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.8rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--white); }
+
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--teal), #0a5c56);
+  color: white;
+  text-decoration: none;
+  padding: 0.6rem 1.6rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(45,212,191,0.3);
+  box-shadow: 0 4px 20px rgba(15,118,110,0.35);
+  transition: all 0.25s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--teal-light), var(--teal));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(15,118,110,0.5);
+}
+
+.btn-login:hover::before { opacity: 1; }
+.btn-login span { position: relative; z-index: 1; }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 7rem 2rem 5rem;
+}
+
+.hero-inner {
+  max-width: 860px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.25);
+  border-radius: 50px;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--teal-light);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards var(--ease);
+}
+
+.hero-eyebrow .dot {
+  width: 6px; height: 6px;
+  background: var(--teal-light);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.5; transform:scale(1.4); }
+}
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards var(--ease);
+}
+
+.hero h1 .line-teal {
+  background: linear-gradient(135deg, var(--teal-light), #5eead4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 580px;
+  margin: 0 auto 2.8rem;
+  font-weight: 300;
+  line-height: 1.7;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards var(--ease);
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards var(--ease);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, var(--teal), #0a5c56);
+  color: white;
+  text-decoration: none;
+  padding: 0.9rem 2.2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid rgba(45,212,191,0.3);
+  box-shadow: 0 6px 30px rgba(15,118,110,0.4);
+  transition: all 0.25s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(15,118,110,0.55);
+  background: linear-gradient(135deg, #12887f, var(--teal));
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.9rem 2.2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.25s var(--ease);
+}
+
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-3px);
+}
+
+/* Hero stats */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  opacity: 0;
+  animation: fadeUp 0.8s 1s forwards var(--ease);
+}
+
+.stat-item { text-align: center; }
+
+.stat-num {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, var(--teal-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 0.2rem;
+}
+
+/* ===== FEATURES SECTION ===== */
+.section {
+  position: relative;
+  z-index: 1;
+  padding: 7rem 2rem;
+}
+
+.section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  display: inline-block;
+  color: var(--teal-light);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.section-sub {
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 520px;
+  margin-bottom: 4rem;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* Feature cards grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(45,212,191,0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  transition: all 0.35s var(--ease);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.feature-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(45,212,191,0.06), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s;
+  border-radius: inherit;
+}
+
+.feature-card:hover {
+  border-color: rgba(45,212,191,0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25), 0 0 0 1px rgba(45,212,191,0.15);
+}
+
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, rgba(15,118,110,0.3), rgba(45,212,191,0.15));
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.3rem;
+  transition: all 0.3s;
+}
+
+.feature-card:hover .feature-icon {
+  background: linear-gradient(135deg, rgba(15,118,110,0.5), rgba(45,212,191,0.25));
+  transform: scale(1.08);
+}
+
+.feature-card h3 {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  color: #e8f4f8;
+}
+
+.feature-card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+.feature-tag {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--teal-light);
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.2);
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* ===== ROLES SECTION ===== */
+.roles-section {
+  background: rgba(13,32,53,0.5);
+  border-top: 1px solid rgba(45,212,191,0.08);
+  border-bottom: 1px solid rgba(45,212,191,0.08);
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.role-card {
+  background: rgba(7,21,37,0.6);
+  border: 1px solid rgba(45,212,191,0.1);
+  border-radius: 22px;
+  padding: 2.2rem;
+  text-align: center;
+  transition: all 0.3s var(--ease);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.role-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.role-card:hover {
+  border-color: rgba(45,212,191,0.35);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.role-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 1.3rem;
+}
+
+.role-avatar.admin    { background: linear-gradient(135deg, #1e40af22, #3b82f633); border: 1px solid #3b82f640; }
+.role-avatar.manager  { background: linear-gradient(135deg, #065f4622, #10b98133); border: 1px solid #10b98140; }
+.role-avatar.employee { background: linear-gradient(135deg, #92400e22, #f59e0b33); border: 1px solid #f59e0b40; }
+
+.role-card h3 {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.role-card p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  font-weight: 300;
+  margin-bottom: 1.2rem;
+}
+
+.role-perks {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.role-perks li {
+  font-size: 0.83rem;
+  color: #8ab4cc;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.role-perks li::before {
+  content: '✓';
+  color: var(--teal-light);
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+  text-align: center;
+  padding: 7rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-box {
+  max-width: 680px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, rgba(15,118,110,0.15), rgba(45,212,191,0.06));
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 28px;
+  padding: 4rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 65%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+.cta-box h2 {
+  font-family: var(--font-head);
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.cta-box p {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  font-weight: 300;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-brand {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, var(--teal-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+footer p {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .roles-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 2.5rem; }
+  .features-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  .cta-box { padding: 2.5rem 1.5rem; }
+}
+
+/* Scroll reveal transition speed staggering */
+.feature-card:nth-child(1) { transition-delay: 0s; }
+.feature-card:nth-child(2) { transition-delay: 0.07s; }
+.feature-card:nth-child(3) { transition-delay: 0.14s; }
+.feature-card:nth-child(4) { transition-delay: 0.21s; }
+.feature-card:nth-child(5) { transition-delay: 0.28s; }
+.feature-card:nth-child(6) { transition-delay: 0.35s; }
+
+.role-card:nth-child(1) { transition-delay: 0s; }
+.role-card:nth-child(2) { transition-delay: 0.1s; }
+.role-card:nth-child(3) { transition-delay: 0.2s; }
+
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-mesh"><div class="bg-orb"></div></div>
+<div class="bg-grid"></div>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <a href="/" class="nav-brand">RevWorkForce</a>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#roles">Who It's For</a></li>
+      <li><a href="#cta">Get Started</a></li>
+    </ul>
+    <a href="/login" class="btn-login">
+      <span><i class="fas fa-sign-in-alt"></i> Login</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Workforce Management Platform
+    </div>
+
+    <h1>
+      Run Your Team<br>
+      <span class="line-teal">Smarter. Faster.</span><br>
+      Together.
+    </h1>
+
+    <p class="hero-sub">
+      RevWorkForce brings your entire organisation into one seamless platform —
+      goals, leaves, reviews, and communication, all in one place.
+    </p>
+
+    <div class="hero-cta">
+      <a href="/login" class="btn-primary">
+        <i class="fas fa-rocket"></i> Get Started
+      </a>
+      <a href="#features" class="btn-ghost">
+        <i class="fas fa-play-circle"></i> See Features
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">3</span>
+        <span class="stat-label">Role Dashboards</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">10+</span>
+        <span class="stat-label">Core Modules</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Web Based</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">Real-time</span>
+        <span class="stat-label">Notifications</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <span class="section-tag">Platform Features</span>
+    <h2 class="section-title">Everything your workforce needs</h2>
+    <p class="section-sub">A complete suite of tools designed to keep your organisation aligned, productive, and informed.</p>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Goal Management</h3>
+        <p>Employees set goals with priority levels. Managers review, update priorities, and track progress — all in real time with deadline alerts.</p>
+        <span class="feature-tag">Goals · Priority · Deadlines</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Leave Management</h3>
+        <p>Employees apply for leave with full history tracking. Managers approve or reject with comments. Policies enforced automatically.</p>
+        <span class="feature-tag">Apply · Approve · Track</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <h3>Performance Reviews</h3>
+        <p>Structured review cycles between managers and employees. Evaluate performance, set ratings, and maintain review history.</p>
+        <span class="feature-tag">Reviews · Ratings · History</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Real-time Notifications</h3>
+        <p>Instant alerts for goal updates, leave decisions, review assignments, and announcements — no one misses what matters.</p>
+        <span class="feature-tag">Instant · Alerts · Bell</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📣</div>
+        <h3>Announcements</h3>
+        <p>Admins broadcast organisation-wide announcements. Managers post team updates. Everyone stays in sync without email clutter.</p>
+        <span class="feature-tag">Broadcast · Teams · Sync</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Analytics & Dashboards</h3>
+        <p>Role-specific dashboards with live stats — active goals, leave counts, team size, and performance trends at a glance.</p>
+        <span class="feature-tag">Dashboards · Stats · Insights</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🗓️</div>
+        <h3>Team Calendar</h3>
+        <p>Visual team leave calendar so managers always know who's available. Holiday tracking built right in.</p>
+        <span class="feature-tag">Calendar · Holidays · Teams</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <h3>Employee Profiles</h3>
+        <p>Rich profiles with department, designation, contact info, and profile pictures. Managers view full team member details.</p>
+        <span class="feature-tag">Profiles · Departments · Roles</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Secure Access Control</h3>
+        <p>Role-based security with JWT authentication. Admin, Manager, and Employee portals each protected and isolated.</p>
+        <span class="feature-tag">JWT · Roles · Security</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROLES ===== -->
+<section class="section roles-section" id="roles">
+  <div class="section-inner">
+    <span class="section-tag">Who It's For</span>
+    <h2 class="section-title">Built for every level of your org</h2>
+    <p class="section-sub">Three tailored portals — each designed for exactly what that role needs, nothing more, nothing less.</p>
+
+    <div class="roles-grid">
+
+      <div class="role-card">
+        <div class="role-avatar admin">🛡️</div>
+        <h3>Admin</h3>
+        <p>Full organisational control. Manage employees, departments, designations, leave policies, and view analytics across the entire company.</p>
+        <ul class="role-perks">
+          <li>Register & manage employees</li>
+          <li>Configure leave policies</li>
+          <li>View activity logs</li>
+          <li>Manage departments & designations</li>
+          <li>Organisation-wide announcements</li>
+        </ul>
+      </div>
+
+      <div class="role-card">
+        <div class="role-avatar manager">📋</div>
+        <h3>Manager</h3>
+        <p>Lead your team effectively. Review goals, approve leaves, conduct performance reviews, and track team availability on one screen.</p>
+        <ul class="role-perks">
+          <li>Approve / reject leave requests</li>
+          <li>Set & track team goals</li>
+          <li>Conduct performance reviews</li>
+          <li>View team leave calendar</li>
+          <li>Set personal goals with deadlines</li>
+        </ul>
+      </div>
+
+      <div class="role-card">
+        <div class="role-avatar employee">💼</div>
+        <h3>Employee</h3>
+        <p>Stay on top of your work. Set personal goals, apply for leave, view reviews, and get notified the moment something changes.</p>
+        <ul class="role-perks">
+          <li>Create & track personal goals</li>
+          <li>Apply for leave with history</li>
+          <li>View performance reviews</li>
+          <li>Real-time notifications</li>
+          <li>Update personal profile</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section" id="cta">
+  <div class="cta-box">
+    <h2>Ready to transform<br>how your team works?</h2>
+    <p>Log in and experience a smarter way to manage your workforce — goals, leaves, reviews, and more.</p>
+    <a href="/login" class="btn-primary" style="font-size:1.05rem; padding:1rem 2.6rem;">
+      <i class="fas fa-sign-in-alt"></i> Login to RevWorkForce
+    </a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <span class="footer-brand">RevWorkForce</span>
+  <p>© 2026 RevWorkForce. All rights reserved.</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card, .role-card').forEach(el => observer.observe(el));
+
+// Navbar scroll effect
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 60) {
+    nav.style.background = 'rgba(7,21,37,0.95)';
+    nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.3)';
+  } else {
+    nav.style.background = 'rgba(7,21,37,0.7)';
+    nav.style.boxShadow = 'none';
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Questions</title>
+    <!-- Font Awesome for icons (optional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 50%, #0f766e 100%);
+            position: relative;
+            animation: gradientShift 15s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* Animated overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 40%, rgba(45, 212, 191, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 35%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Main card */
+        .security-card {
+            max-width: 540px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 40px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2.8rem 2.5rem;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .security-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Header */
+        .security-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .security-header h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(145deg, #0f172a, #0f766e, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .security-header p {
+            color: #334155;
+            font-size: 1rem;
+            font-weight: 500;
+            background: rgba(255,255,255,0.3);
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Form */
+        .security-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .question-group {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(5px);
+            border-radius: 28px;
+            padding: 1.5rem 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .question-group:hover {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 8px 20px -8px rgba(15, 118, 110, 0.3);
+        }
+
+        .question-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .question-label i {
+            color: #0f766e;
+            font-size: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px dashed rgba(15, 118, 110, 0.3);
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 30px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px -5px rgba(0,0,0,0.1);
+        }
+
+        .answer-input:focus {
+            border-color: #8b5cf6;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2), 0 4px 10px -5px rgba(0,0,0,0.1);
+        }
+
+        /* Verify button */
+        .verify-btn {
+            background: linear-gradient(145deg, #0f766e, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 15px 25px -10px rgba(15, 118, 110, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 35px -12px rgba(139, 92, 246, 0.6);
+            background: linear-gradient(145deg, #2dd4bf, #a78bfa);
+        }
+
+        .verify-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Back link */
+        .back-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-link a {
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(255,255,255,0.3);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+        }
+
+        .back-link a:hover {
+            background: white;
+            color: #0f766e;
+            gap: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .security-card {
+                padding: 2rem 1.5rem;
+            }
+            .security-header h2 {
+                font-size: 2rem;
+            }
+            .question-group {
+                padding: 1.2rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="security-card">
+        <div class="security-header">
+            <h2>🔐 Verify Your Identity</h2>
+            <p>Answer the security questions</p>
+        </div>
+
+        <form action="/auth/verify-answers" method="post" class="security-form">
+            <input type="hidden" name="email" th:value="${email}">
+
+            <!-- Question 1 -->
+            <div class="question-group">
+                <div class="question-label">
+                    <i class="fas fa-question-circle"></i> Question 1
+                </div>
+                <div class="question-text" th:text="${q1}">What is your first school name?</div>
+                <input type="text" name="a1" class="answer-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question-group">
+                <div class="question-label">
+                    <i class="fas fa-question-circle"></i> Question 2
+                </div>
+                <div class="question-text" th:text="${q2}">What is your favourite food?</div>
+                <input type="text" name="a2" class="answer-input" placeholder="Your answer" required>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question-group">
+                <div class="question-label">
+                    <i class="fas fa-question-circle"></i> Question 3
+                </div>
+                <div class="question-text" th:text="${q3}">What is your childhood nickname?</div>
+                <input type="text" name="a3" class="answer-input" placeholder="Your answer" required>
+            </div>
+
+            <button type="submit" class="verify-btn">
+                <i class="fas fa-check-circle"></i> Verify Answers
+            </button>
+        </form>
+
+        <div class="back-link">
+            <a href="/auth/forgot-password"><i class="fas fa-arrow-left"></i> Back to email</a>
+        </div>
+    </div>
+</body>
+</html>
