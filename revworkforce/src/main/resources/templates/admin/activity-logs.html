@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+
+<div th:fragment="content" style="padding: 2rem 2.5rem; max-width: 1600px; margin: 0 auto; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+    
+    <style>
+        /* Header Section */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-left h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #101c2e;
+            letter-spacing: -0.02em;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .header-left .subtitle {
+            color: #5a7395;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-left .subtitle i {
+            font-size: 1rem;
+            color: #3f6ab3;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,20,50,0.04);
+            border: 1px solid #eef3f9;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafd;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            border: 1px solid #dce5f0;
+        }
+        
+        .filter-item i {
+            color: #5f7aa6;
+            font-size: 0.9rem;
+        }
+        
+        .filter-item select, .filter-item input {
+            border: none;
+            background: transparent;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            color: #1b2a41;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f8fafd;
+            border: 1px solid #dce5f0;
+            border-radius: 40px;
+            padding: 0.4rem 0.4rem 0.4rem 1.2rem;
+            min-width: 250px;
+        }
+        
+        .search-box i {
+            color: #7b8fa9;
+        }
+        
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 0.8rem;
+            width: 100%;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .search-box button {
+            background: #0d2b54;
+            border: none;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        
+        .search-box button:hover {
+            background: #143b70;
+        }
+        
+        .export-btn {
+            background: white;
+            border: 1px solid #dce5f0;
+            border-radius: 40px;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1f4977;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        
+        .export-btn:hover {
+            background: #f0f5fd;
+            border-color: #8db1e0;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,20,50,0.04);
+            border: 1px solid #eef3f9;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: #eef4fc;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2f57a1;
+            font-size: 1.5rem;
+        }
+        
+        .stat-content h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #5a7395;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-content .stat-number {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #101c2e;
+            line-height: 1.2;
+        }
+        
+        .stat-content .stat-trend {
+            font-size: 0.8rem;
+            color: #22a65e;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        /* Table Card */
+        .table-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 25px rgba(0,20,50,0.06);
+            border: 1px solid #ecf2fa;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1.2rem 1.8rem;
+            background: #fcfdff;
+            border-bottom: 1px solid #e5ecf5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .table-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f3a68;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .table-header h3 i {
+            color: #2f57a1;
+        }
+        
+        .table-header .badge {
+            background: #eef4fc;
+            color: #1c3f6e;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1.8rem;
+            font-weight: 600;
+            color: #365073;
+            background: #f8fbfe;
+            border-bottom: 2px solid #e5ecf5;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1.2rem 1.8rem;
+            border-bottom: 1px solid #edf2f8;
+            color: #1b2a41;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fafcff;
+        }
+
+        /* Role badges */
+        .role-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .role-admin {
+            background: #fee9e6;
+            color: #b13e4b;
+        }
+        
+        .role-manager {
+            background: #e2f0fa;
+            color: #1f5f8e;
+        }
+        
+        .role-employee {
+            background: #e6f3ed;
+            color: #1e7b4c;
+        }
+
+        /* Action type styling */
+        .action-type {
+            font-weight: 600;
+            color: #1f3a68;
+        }
+        
+        .action-desc {
+            font-size: 0.9rem;
+            color: #4a5e7a;
+        }
+
+        /* Timestamp styling */
+        .timestamp {
+            font-size: 0.85rem;
+            color: #5a7395;
+            white-space: nowrap;
+        }
+        
+        .timestamp i {
+            margin-right: 0.3rem;
+            font-size: 0.75rem;
+            color: #7b8fa9;
+        }
+
+        /* Pagination */
+        .pagination {
+            padding: 1.5rem 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-top: 1px solid #eef3f9;
+        }
+        
+        .pagination-info {
+            color: #5a7395;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid #dce5f0;
+            background: white;
+            color: #365073;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        
+        .page-btn.active {
+            background: #0d2b54;
+            border-color: #0d2b54;
+            color: white;
+        }
+        
+        .page-btn:hover:not(.active) {
+            background: #f0f5fd;
+            border-color: #8db1e0;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #7b8fa9;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .clear-filters {
+            background: #f0f5fd;
+            border: 1px solid #dce5f0;
+            border-radius: 40px;
+            padding: 0.6rem 1.5rem;
+            color: #1f4977;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <h2>System Activity Logs</h2>
+            <div class="subtitle">
+                <i class="fas fa-shield-alt"></i>
+                <span>Complete audit trail of all system activities</span>
+            </div>
+        </div>
+        <div class="weather-header" style="background: white; padding: 0.6rem 1.6rem; border-radius: 40px; display: flex; align-items: center; gap: 0.6rem; border: 1px solid #e9eef5;">
+            <i class="fas fa-cloud-sun" style="color: #3f6ab3;"></i>
+            <span>27°C Partly cloudy</span>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="stat-content">
+                <h4>Total Events</h4>
+                <div class="stat-number" th:text="${#lists.size(logs)}">24</div>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> Last 24 hours
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stat-content">
+                <h4>Admin Actions</h4>
+                <div class="stat-number" th:text="${#lists.size(logs)}">15</div>
+                <div class="stat-trend" style="color: #b13e4b;">
+                    <i class="fas fa-shield-alt"></i> System changes
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h4>Peak Time</h4>
+                <div class="stat-number">14:00</div>
+                <div class="stat-trend">
+                    <i class="fas fa-sun"></i> Most active
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="stat-content">
+                <h4>Today</h4>
+                <div class="stat-number" th:text="${#lists.size(logs)}">24</div>
+                <div class="stat-trend">
+                    <i class="fas fa-chart-line"></i> +12% from yesterday
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <div class="filter-item">
+                <i class="fas fa-user"></i>
+                <select>
+                    <option>All Users</option>
+                    <option>ADMIN</option>
+                    <option>manager@rev.com</option>
+                    <option>ram@rev.com</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <i class="fas fa-tag"></i>
+                <select>
+                    <option>All Actions</option>
+                    <option>CHANGE_EMPLOYEE_STATUS</option>
+                    <option>UPDATE_EMPLOYEE</option>
+                    <option>VIEW_TEAM_LEAVE_CALENDAR</option>
+                    <option>APPROVE_LEAVE</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <i class="fas fa-calendar"></i>
+                <input type="date" value="2026-03-06">
+            </div>
+        </div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search logs...">
+            <button>Search</button>
+        </div>
+        <button class="export-btn">
+            <i class="fas fa-download"></i>
+            Export Logs
+        </button>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3>
+                <i class="fas fa-list-ul"></i>
+                Activity Timeline
+            </h3>
+            <span class="badge" th:text="${#lists.size(logs)} + ' events'">24 events</span>
+        </div>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="log : ${logs}" th:unless="${#lists.isEmpty(logs)}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-user-circle" style="color: #5f7aa6; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 500;" th:text="${log.username}">ADMIN</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge" 
+                                  th:classappend="${log.role == 'ADMIN' ? 'role-admin' : 
+                                                  (log.role == 'MANAGER' ? 'role-manager' : 'role-employee')}"
+                                  th:text="${log.role}">ADMIN</span>
+                        </td>
+                        <td>
+                            <span class="action-type" th:text="${log.action}">CHANGE_EMPLOYEE_STATUS</span>
+                        </td>
+                        <td>
+                            <span class="action-desc" th:text="${log.description}">Changed employee ID 3 to INACTIVE</span>
+                        </td>
+                        <td>
+                            <div class="timestamp">
+                                <i class="far fa-clock"></i>
+                                <span th:text="${#temporals.format(log.timestamp, 'MMM dd, yyyy HH:mm:ss')}">2026-03-06 00:02:00</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Empty state when no logs -->
+                    <tr th:if="${#lists.isEmpty(logs)}">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>No activity logs found</p>
+                                <button class="clear-filters">
+                                    <i class="fas fa-times"></i>
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <div class="pagination-info">
+                Showing <strong>1-24</strong> of <strong>24</strong> events
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">4</button>
+                <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

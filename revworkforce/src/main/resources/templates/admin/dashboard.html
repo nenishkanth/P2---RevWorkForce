@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        :root {
+            --accent: #0f766e;
+            --accent-light: #14b8a6;
+            --accent-dark: #115e59;
+            --navy: #0f172a;
+            --navy-light: #334155;
+            --radius: 24px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 20px -6px rgba(15,118,110,0.2);
+            --shadow-lg: 0 20px 30px -10px rgba(15,118,110,0.3);
+            --transition: all 0.2s ease;
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .dashboard-header h2 {
+            margin-bottom: 0;
+            border-left: 6px solid var(--accent);
+            padding-left: 1.5rem;
+            font-size: 2.2rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.5rem 1.5rem 0.5rem 1rem;
+            border-radius: 40px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15,118,110,0.3);
+        }
+        .user-name { font-weight: 600; color: var(--navy); font-size: 1rem; }
+        .avatar {
+            width: 42px; height: 42px;
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+            color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.3rem; text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(15,118,110,0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15,118,110,0.15);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 6px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        }
+        .stat-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+        .stat-icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; opacity: 0.9; }
+        .stat-card h5 { font-size: 1.1rem; color: var(--navy-light); margin-bottom: 0.5rem; font-weight: 500; }
+        .stat-number { font-size: 3rem; font-weight: 700; color: var(--navy); line-height: 1.2; }
+
+        .quick-actions {
+            background: white; border-radius: var(--radius);
+            padding: 2rem; box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15,118,110,0.15); margin-top: 1rem;
+        }
+        .quick-actions h3 {
+            font-size: 1.8rem; color: var(--navy);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent); padding-left: 1rem;
+        }
+        .action-buttons { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+        .action-btn {
+            padding: 0.9rem 2.2rem; border-radius: 40px; font-weight: 500;
+            text-decoration: none; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 0.7rem;
+            border: 1px solid transparent; box-shadow: var(--shadow-sm);
+        }
+        .action-btn i { font-size: 1.2rem; }
+        .action-btn-primary { background: linear-gradient(145deg, var(--accent), var(--accent-dark)); color: white; }
+        .action-btn-primary:hover { background: linear-gradient(145deg, var(--accent-light), var(--accent)); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .action-btn-secondary { background: white; border: 1px solid var(--accent); color: var(--navy); }
+        .action-btn-secondary:hover { background: rgba(15,118,110,0.05); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .action-btn-outline { background: transparent; border: 1px solid var(--navy-light); color: var(--navy); }
+        .action-btn-outline:hover { background: var(--navy-light); color: white; transform: translateY(-3px); }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+            margin-top: 2rem;
+        }
+        .recent-activity, .trend-card {
+            background: white; border-radius: var(--radius);
+            padding: 1.5rem 1.8rem; box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15,118,110,0.15);
+        }
+        .recent-activity h3, .trend-card h3 {
+            font-size: 1.4rem; color: var(--navy);
+            margin-bottom: 1.2rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* Activity list */
+        .activity-list { list-style: none; padding: 0; margin: 0; }
+        .activity-item {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.75rem 0; border-bottom: 1px solid #eef2f6;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-badge {
+            font-size: 0.68rem; font-weight: 700; padding: 0.25rem 0.75rem;
+            border-radius: 40px; text-transform: uppercase;
+            min-width: 80px; text-align: center; white-space: nowrap;
+        }
+        .badge-leave     { background: #fef3c7; color: #b45309; }
+        .badge-approved  { background: #d1fae5; color: #065f46; }
+        .badge-rejected  { background: #fee2e2; color: #991b1b; }
+        .badge-pending   { background: #fef3c7; color: #b45309; }
+        .badge-cancelled { background: #f1f5f9; color: #475569; }
+        .badge-announce  { background: #e6f0ff; color: #1d4ed8; }
+
+        .activity-text { flex: 1; color: #1e293b; font-size: 0.9rem; }
+        .activity-time { color: #64748b; font-size: 0.78rem; white-space: nowrap; }
+        .activity-empty { color: #94a3b8; font-style: italic; font-size: 0.9rem; padding: 1rem 0; text-align: center; }
+
+        .view-all-link { text-align: right; margin-top: 0.75rem; }
+        .view-all-link a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+
+        /* Chart canvas wrapper — explicit height so Chart.js renders */
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 220px;
+            margin-top: 0.5rem;
+        }
+        .chart-canvas-wrapper canvas {
+            position: absolute !important;
+            top: 0; left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid    { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+            .action-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+
+    <!-- Embed monthly trend as JSON via inline script (single expression, no loops) -->
+    <script th:inline="javascript">
+        var _dashboardMonthlyTrend = /*[[${dashboardMonthlyTrend}]]*/ [0,0,0,0,0,0,0,0,0,0,0,0];
+    </script>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h2>Admin Dashboard</h2>
+        <div class="user-info">
+            <span class="user-name"
+                  th:text="${loggedInEmployee != null ? loggedInEmployee.firstName + ' ' + loggedInEmployee.lastName : 'Admin'}">
+                Admin
+            </span>
+            <div class="avatar"
+                 th:text="${loggedInEmployee != null ? #strings.substring(loggedInEmployee.firstName, 0, 1) : 'A'}">
+                A
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <h5>Total Employees</h5>
+            <div class="stat-number" th:text="${employeeCount != null ? employeeCount : 0}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+            <h5>Pending Leaves</h5>
+            <div class="stat-number" th:text="${pendingLeaveCount != null ? pendingLeaveCount : 0}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-bullhorn"></i></div>
+            <h5>Announcements</h5>
+            <div class="stat-number" th:text="${announcementCount != null ? announcementCount : 0}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            <h5>Holidays</h5>
+            <div class="stat-number" th:text="${holidayCount != null ? holidayCount : 0}">0</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="/admin/register"      class="action-btn action-btn-primary"><i class="fas fa-user-plus"></i> Add New Employee</a>
+            <a href="/admin/calendar"      class="action-btn action-btn-secondary"><i class="fas fa-calendar-plus"></i> Manage Holidays</a>
+            <a href="/admin/announcements" class="action-btn action-btn-outline"><i class="fas fa-pen"></i> Post Announcement</a>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid: Recent Activity + Leave Trend Chart -->
+    <div class="dashboard-grid">
+
+        <!-- Recent Activity — real data from DB -->
+        <div class="recent-activity">
+            <h3><i class="fas fa-clock" style="color:var(--accent)"></i> Recent Activity</h3>
+
+            <ul class="activity-list">
+
+                <!-- Recent Leave requests -->
+                <th:block th:each="leave : ${recentLeaves}">
+                    <li class="activity-item">
+                        <span class="activity-badge"
+                              th:classappend="${leave.status.name() == 'APPROVED'} ? 'badge-approved' :
+                                             (${leave.status.name() == 'REJECTED'}  ? 'badge-rejected'  :
+                                             (${leave.status.name() == 'CANCELLED'} ? 'badge-cancelled' : 'badge-pending'))"
+                              th:text="${leave.status}">
+                        </span>
+                        <span class="activity-text"
+                              th:text="${leave.employee.firstName + ' ' + leave.employee.lastName
+                                        + ' — ' + leave.leaveType + ' leave'}">
+                        </span>
+                        <span class="activity-time"
+                              th:text="${#temporals.format(leave.appliedAt, 'dd MMM')}">
+                        </span>
+                    </li>
+                </th:block>
+
+                <!-- Recent Announcements -->
+                <th:block th:each="ann : ${recentAnnouncements}">
+                    <li class="activity-item">
+                        <span class="activity-badge badge-announce">Announce</span>
+                        <span class="activity-text" th:text="${ann.title}"></span>
+                        <span class="activity-time"
+                              th:text="${#temporals.format(ann.createdAt, 'dd MMM')}">
+                        </span>
+                    </li>
+                </th:block>
+
+                <!-- Fallback when both lists are empty -->
+                <li th:if="${(recentLeaves == null || #lists.isEmpty(recentLeaves))
+                             and (recentAnnouncements == null || #lists.isEmpty(recentAnnouncements))}"
+                    class="activity-item">
+                    <span class="activity-empty">No recent activity found.</span>
+                </li>
+
+            </ul>
+
+            <div class="view-all-link">
+                <a href="/admin/activity-logs">View all activity &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Monthly Leave Trend — real DB data -->
+        <div class="trend-card">
+            <h3><i class="fas fa-chart-line" style="color:var(--accent)"></i> Monthly Leave Trend</h3>
+            <div class="chart-canvas-wrapper">
+                <canvas id="leaveTrendChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chart.js loaded AFTER canvas element -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var monthlyData = (typeof _dashboardMonthlyTrend !== 'undefined')
+                              ? Array.from(_dashboardMonthlyTrend)
+                              : new Array(12).fill(0);
+
+            new Chart(document.getElementById('leaveTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                    datasets: [{
+                        label: 'Leaves',
+                        data: monthlyData,
+                        borderColor: '#0f766e',
+                        backgroundColor: 'rgba(15,118,110,0.08)',
+                        tension: 0.35,
+                        fill: true,
+                        pointBackgroundColor: '#0f766e',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#eef2f6' } }
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

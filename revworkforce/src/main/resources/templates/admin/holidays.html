@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+
+<div th:fragment="content">
+
+<h2>Holiday Management</h2>
+
+<form th:action="@{/admin/holidays/add}" method="post" class="mb-4">
+
+<div class="row">
+
+<div class="col">
+<input type="date" name="date" class="form-control" required>
+</div>
+
+<div class="col">
+<input type="text" name="name" placeholder="Holiday Name" class="form-control" required>
+</div>
+
+<div class="col">
+<button class="btn btn-primary">Add Holiday</button>
+</div>
+
+</div>
+
+</form>
+
+<table class="table table-bordered">
+
+<thead class="table-dark">
+<tr>
+<th>Date</th>
+<th>Name</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="h : ${holidays}">
+
+<td th:text="${h.date}"></td>
+<td th:text="${h.name}"></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</html>

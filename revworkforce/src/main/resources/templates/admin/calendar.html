@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .content-wrapper {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        /* form styling */
+        .holiday-form {
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            flex: 1 1 180px;
+            min-width: 160px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: white;
+            transition: all 0.15s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b7cff;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            text-transform: none;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b7cff;
+            border-color: #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+            border-color: #fca5a5;
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .cancel-link {
+            margin-left: 0.5rem;
+        }
+
+        /* table styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 700px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1rem 1.2rem;
+            background: #f8fafd;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #fafcff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        .badge-yes {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-no {
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-group form {
+            margin: 0;
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="content-wrapper">
+        <h2>Company Holiday Calendar</h2>
+
+        <!-- Add / Edit Holiday -->
+        <h3 th:text="${holiday.id == null} ? 'Add Holiday' : 'Edit Holiday'"></h3>
+
+        <form th:action="${holiday.id == null} ? @{/admin/calendar/add} : @{/admin/calendar/update}"
+              method="post" class="holiday-form">
+
+            <input type="hidden" name="id" th:value="${holiday.id}">
+
+            <div class="form-group">
+                <label>Holiday Name</label>
+                <input type="text" name="name" th:value="${holiday.name}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" th:value="${holiday.date}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" name="description" th:value="${holiday.description}">
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox"
+                       name="optionalHoliday"
+                       id="optionalCheckbox"
+                       th:checked="${holiday.optionalHoliday}">
+                <label for="optionalCheckbox">Optional Holiday</label>
+            </div>
+
+            <div class="form-group" style="flex: 0 0 auto; display: flex; gap: 0.5rem; align-items: center;">
+                <button type="submit" class="btn btn-primary"
+                        th:text="${holiday.id == null} ? 'Add Holiday' : 'Update Holiday'">
+                </button>
+
+                <a href="/admin/calendar" th:if="${holiday.id != null}" class="btn btn-secondary cancel-link">
+                    Cancel Edit
+                </a>
+            </div>
+        </form>
+
+        <!-- Holiday List -->
+        <h3>Holiday List</h3>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Optional</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="h : ${holidays}">
+                        <td th:text="${h.name}"></td>
+                        <td th:text="${h.date}"></td>
+                        <td th:text="${h.description}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${h.optionalHoliday} ? 'badge-yes' : 'badge-no'"
+                                  th:text="${h.optionalHoliday} ? 'Yes' : 'No'"></span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a th:href="@{'/admin/calendar/edit/' + ${h.id}}"
+                                   class="btn btn-primary btn-sm">Edit</a>
+                                <form th:action="@{'/admin/calendar/delete/' + ${h.id}}"
+                                      method="post"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(holidays)}" class="empty-row">
+                        <td colspan="5">No holidays added</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

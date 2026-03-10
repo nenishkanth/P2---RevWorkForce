@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .content-wrapper {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 2rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* form grid */
+        .registration-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: #ffffff;
+            transition: all 0.15s;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 14px;
+            padding-right: 2.5rem;
+        }
+
+        /* dynamic fields container */
+        .dynamic-field {
+            grid-column: span 2;
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 0.5rem;
+        }
+
+        .dynamic-field .form-group {
+            max-width: 400px;
+        }
+
+        /* submit button */
+        .form-actions {
+            grid-column: span 2;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            background: #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        /* small adjustments */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        @media (max-width: 700px) {
+            .registration-form {
+                grid-template-columns: 1fr;
+            }
+            .form-group.full-width,
+            .dynamic-field,
+            .form-actions {
+                grid-column: span 1;
+            }
+        }
+    </style>
+
+    <div class="content-wrapper">
+        <h2>Register Employee</h2>
+
+        <form th:action="@{/admin/register}" method="post" th:object="${employee}" class="registration-form">
+
+            <!-- First Name -->
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="firstName" required>
+            </div>
+
+            <!-- Last Name -->
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="lastName" required>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <!-- Role -->
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role" id="roleSelect">
+                    <option value="EMPLOYEE">Employee</option>
+                    <option value="MANAGER">Manager</option>
+                   <!-- <option value="ADMIN">Admin</option> -->
+                </select>
+            </div>
+
+            <!-- Department -->
+            <div class="form-group">
+                <label>Department</label>
+                <select name="department.id">
+                    <option th:each="d : ${departments}"
+                            th:value="${d.id}"
+                            th:text="${d.name}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Designation -->
+            <div class="form-group">
+                <label>Designation</label>
+                <select name="designation.id">
+                    <option th:each="d : ${designations}"
+                            th:value="${d.id}"
+                            th:text="${d.name}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <!-- Joining Date -->
+            <div class="form-group">
+                <label>Joining Date</label>
+                <input type="date" name="joiningDate">
+            </div>
+
+            <!-- Salary -->
+            <div class="form-group">
+                <label>Salary</label>
+                <input type="number" name="salary" step="0.01" min="0">
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" name="dob">
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phoneNumber">
+            </div>
+
+            <!-- Address -->
+            <div class="form-group full-width">
+                <label>Address</label>
+                <input type="text" name="address">
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="form-group full-width">
+                <label>Emergency Contact</label>
+                <input type="text" name="emergencyContact">
+            </div>
+
+            <!-- Dynamic fields container (Reporting Manager / Assign Admin) -->
+            <div class="dynamic-field" id="dynamicFieldContainer">
+                <!-- Reporting Manager (visible for EMPLOYEE) -->
+                <div id="managerField">
+                    <div class="form-group">
+                        <label>Reporting Manager</label>
+                        <select name="managerId">
+                            <option value="">Select Manager</option>
+                            <option th:each="m : ${managers}"
+                                    th:value="${m.id}"
+                                    th:text="${m.firstName + ' ' + m.lastName}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Assign Admin (visible for MANAGER) -->
+                <div id="adminField" style="display: none;">
+                    <div class="form-group">
+                        <label>Assign Admin</label>
+                        <select name="adminId">
+                            <option value="">Select Admin</option>
+                            <option th:each="a : ${admins}"
+                                    th:value="${a.id}"
+                                    th:text="${a.firstName + ' ' + a.lastName}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div class="form-actions">
+                <button type="submit" class="btn">Create Employee</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- JavaScript for toggling manager/admin fields (unchanged but adapted) -->
+    <script>
+        function toggleAssignment() {
+            const role = document.getElementById("roleSelect").value;
+            const managerField = document.getElementById("managerField");
+            const adminField = document.getElementById("adminField");
+
+            if (role === "EMPLOYEE") {
+                managerField.style.display = "block";
+                adminField.style.display = "none";
+            } else if (role === "MANAGER") {
+                managerField.style.display = "none";
+                adminField.style.display = "block";
+            } else {
+                managerField.style.display = "none";
+                adminField.style.display = "none";
+            }
+        }
+
+        document.getElementById("roleSelect").addEventListener("change", toggleAssignment);
+        window.onload = toggleAssignment;
+    </script>
+</div>
+</body>
+</html>

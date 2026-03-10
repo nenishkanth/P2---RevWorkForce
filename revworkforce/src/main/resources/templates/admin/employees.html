@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-base :: layout(~{::content})}">
+<head>
+    <!-- Ensure proper rendering and mobile responsiveness -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div th:fragment="content">
+    <!-- INLINE PROFESSIONAL CSS (matches your class names) -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        /* main content card (replaces plain background) */
+        .content-wrapper {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem 2rem 2rem;
+            margin: 2rem auto;
+            max-width: 100%;
+        }
+
+        /* heading */
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- search / filter bar --- */
+        .search-box form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-box input[type="text"],
+        .search-box select {
+            flex: 2 1 260px;
+            background: #f8fafd;
+            border: 1px solid #e2e8f0;
+            border-radius: 60px;
+            padding: 0.7rem 1.25rem;
+            font-size: 0.95rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.15s;
+            height: auto;
+            line-height: 1.5;
+            appearance: none;
+        }
+
+        .search-box select {
+            flex: 1 1 160px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 14px;
+        }
+
+        .search-box input:focus,
+        .search-box select:focus {
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 4px rgba(59, 124, 255, 0.15);
+            background: #ffffff;
+        }
+
+        /* buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b7cff;
+            border-color: #3b7cff;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 124, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px -4px rgba(59, 124, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .btn-warning {
+            background: #fbbf24;
+            border-color: #fbbf24;
+            color: #1e293b;
+        }
+
+        .btn-warning:hover {
+            background: #f59e0b;
+            border-color: #f59e0b;
+        }
+
+        .btn-success {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            border-radius: 30px;
+        }
+
+        /* table container */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+            margin-top: 1.5rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 1400px; /* ensures all columns visible */
+        }
+
+        .table thead tr {
+            background: #f8fafd;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1rem 0.8rem;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 1rem 0.8rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #fafcff;
+        }
+
+        /* form controls inside table */
+        .form-control {
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: border 0.15s, box-shadow 0.15s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b7cff;
+            box-shadow: 0 0 0 3px rgba(59, 124, 255, 0.15);
+        }
+
+        .form-control-sm {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 10px;
+        }
+
+        /* text helper */
+        .text-secondary {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .text-muted {
+            color: #94a3b8;
+        }
+
+        .fw-semibold {
+            font-weight: 600;
+        }
+
+        .small {
+            font-size: 0.8rem;
+        }
+
+        .mt-1 { margin-top: 0.25rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .gap-1 { gap: 0.25rem; }
+        .d-flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+
+        /* badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.7rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            background: #e6f0ff;
+            color: #1d4ed8;
+        }
+
+        .badge-success {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-danger {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        /* Assigned column styling */
+        .assigned-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .assign-form {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .assign-form select {
+            flex: 1 1 100px;
+            min-width: 120px;
+        }
+
+        /* specific for employee ID */
+        td:first-child {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-weight: 500;
+            color: #0b3b5c;
+        }
+
+        /* action buttons inside td */
+        .td-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* status change form */
+        .status-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        /* adjust for inline forms in tables */
+        .table td form {
+            margin: 0;
+        }
+    </style>
+
+    <!-- apply a content wrapper for card effect -->
+    <div class="content-wrapper">
+        <h2>Employee Management</h2>
+
+        <!-- SEARCH & FILTER (already present, now styled) -->
+        <div class="search-box">
+            <form method="get" action="/admin/employees">
+                <input type="text" name="keyword" placeholder="Search employee..." th:value="${keyword}" class="form-control">
+                <select name="role" class="form-control">
+                    <option value="">All Roles</option>
+                    <option value="EMPLOYEE">Employee</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Search / Filter</button>
+                <a href="/admin/employees" class="btn btn-secondary">Clear</a>
+            </form>
+        </div>
+
+        <!-- EMPLOYEE TABLE (responsive container) -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Gender</th>
+                    <th>Salary</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Role</th>
+                    <th>Assigned To</th>
+                    <th>Joining Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="employee : ${employees}">
+
+                    <!--
+                        HTML5 form attribute pattern:
+                        - Update form and status form are defined OUTSIDE the <tr> (after </tr> effectively via browser handling,
+                          but placed here before cells for clarity).
+                        - Each input/button references its form via form="formId".
+                        - Assign forms are fully self-contained inside their own <td>.
+                        This avoids all nested-form issues.
+                    -->
+
+                    <!-- UPDATE FORM — defined here, inputs reference it via form attribute -->
+                    <form th:id="'updateForm-' + ${employee.id}"
+                          th:action="@{/admin/employees/update}" method="post">
+                        <input type="hidden" name="id"         th:value="${employee.id}">
+                        <input type="hidden" name="employeeId" th:value="${employee.employeeId}">
+                        <input type="hidden" name="status"     th:value="${employee.status}">
+                    </form>
+
+                    <!-- STATUS FORM — defined here, select/button reference it via form attribute -->
+                    <form th:id="'statusForm-' + ${employee.id}"
+                          th:action="@{/admin/employees/{id}/status(id=${employee.id})}" method="post">
+                    </form>
+
+                    <!-- Employee ID -->
+                    <td th:text="${employee.employeeId}" class="fw-semibold"></td>
+
+                    <!-- Name (editable) — linked to updateForm -->
+                    <td>
+                        <input type="text" name="firstName" th:value="${employee.firstName}"
+                               th:form="'updateForm-' + ${employee.id}"
+                               class="form-control form-control-sm" placeholder="First">
+                        <input type="text" name="lastName" th:value="${employee.lastName}"
+                               th:form="'updateForm-' + ${employee.id}"
+                               class="form-control form-control-sm mt-1" placeholder="Last">
+                    </td>
+
+                    <!-- Email (editable) -->
+                    <td>
+                        <input type="email" name="email" th:value="${employee.email}"
+                               th:form="'updateForm-' + ${employee.id}"
+                               class="form-control form-control-sm">
+                    </td>
+
+                    <!-- Phone (editable) -->
+                    <td>
+                        <input type="text" name="phoneNumber" th:value="${employee.phoneNumber}"
+                               th:form="'updateForm-' + ${employee.id}"
+                               class="form-control form-control-sm">
+                    </td>
+
+                    <!-- Gender (display only) -->
+                    <td th:text="${employee.gender != null ? employee.gender : '—'}"></td>
+
+                    <!-- Salary (editable) -->
+                    <td>
+                        <input type="number" name="salary" th:value="${employee.salary}"
+                               th:form="'updateForm-' + ${employee.id}"
+                               class="form-control form-control-sm">
+                    </td>
+
+                    <!-- Department (display only) -->
+                    <td th:text="${employee.department != null ? employee.department.name : 'Not Assigned'}"></td>
+
+                    <!-- Designation (display only) -->
+                    <td th:text="${employee.designation != null ? employee.designation.name : 'Not Assigned'}"></td>
+
+                    <!-- Role (display only) -->
+                    <td th:text="${employee.role}"></td>
+
+                    <!-- Assigned To — fully self-contained assign forms, no nesting issues -->
+                    <td>
+                        <div class="assigned-wrapper">
+                            <!-- Current assignment display -->
+                            <div class="mb-1 small text-secondary">
+                                <span th:if="${employee.role != null and employee.role.name() == 'EMPLOYEE'}"
+                                      th:text="${employee.reportingManager != null ? employee.reportingManager.firstName + ' ' + employee.reportingManager.lastName : 'Not Assigned'}">
+                                </span>
+                                <span th:if="${employee.role != null and employee.role.name() == 'MANAGER'}"
+                                      th:text="${employee.assignedAdmin != null ? employee.assignedAdmin.firstName + ' ' + employee.assignedAdmin.lastName : 'Not Assigned'}">
+                                </span>
+                                <span th:if="${employee.role != null and employee.role.name() == 'ADMIN'}" class="text-muted">
+                                    — (admin)
+                                </span>
+                            </div>
+
+                            <!-- Assign Manager (for EMPLOYEE) -->
+                            <div th:if="${employee.role != null and employee.role.name() == 'EMPLOYEE'}" class="assign-form">
+                                <form th:action="@{/admin/employees/assign-manager/{id}(id=${employee.id})}" method="post" class="d-flex gap-1 flex-wrap">
+                                    <select name="managerId" class="form-control form-control-sm">
+                                        <option value="">Select Manager</option>
+                                        <option th:each="manager : ${managers}"
+                                                th:value="${manager.id}"
+                                                th:text="${manager.firstName + ' ' + manager.lastName}"
+                                                th:selected="${employee.reportingManager != null and employee.reportingManager.id == manager.id}">
+                                        </option>
+                                    </select>
+                                    <button type="submit" class="btn btn-warning btn-sm">Assign</button>
+                                </form>
+                            </div>
+
+                            <!-- Assign Admin (for MANAGER) -->
+                            <div th:if="${employee.role != null and employee.role.name() == 'MANAGER'}" class="assign-form">
+                                <form th:action="@{/admin/employees/assign-admin/{id}(id=${employee.id})}" method="post" class="d-flex gap-1 flex-wrap">
+                                    <select name="adminId" class="form-control form-control-sm">
+                                        <option value="">Select Admin</option>
+                                        <option th:each="admin : ${admins}"
+                                                th:value="${admin.id}"
+                                                th:text="${admin.firstName + ' ' + admin.lastName}"
+                                                th:selected="${employee.assignedAdmin != null and employee.assignedAdmin.id == admin.id}">
+                                        </option>
+                                    </select>
+                                    <button type="submit" class="btn btn-warning btn-sm">Assign</button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Joining Date (display only) -->
+                    <td th:text="${employee.joiningDate != null ? employee.joiningDate : '—'}"></td>
+
+                    <!-- Status badge -->
+                    <td>
+                        <span class="badge"
+                              th:classappend="${employee.status == 'ACTIVE'} ? 'badge-success' :
+                                              (${employee.status == 'INACTIVE'} ? 'badge-warning' : 'badge-danger')"
+                              th:text="${employee.status}">ACTIVE</span>
+                    </td>
+
+                    <!-- Actions: Save (updateForm) + Status change (statusForm) -->
+                    <td class="td-actions">
+                        <!-- Save button linked to updateForm -->
+                        <button type="submit"
+                                th:form="'updateForm-' + ${employee.id}"
+                                class="btn btn-primary btn-sm">Save</button>
+
+                        <!-- Status change — select + button linked to statusForm -->
+                        <select name="status"
+                                th:form="'statusForm-' + ${employee.id}"
+                                class="form-control form-control-sm mt-1">
+                            <option th:selected="${employee.status != null and employee.status.name() == 'ACTIVE'}"   value="ACTIVE">ACTIVE</option>
+                            <option th:selected="${employee.status != null and employee.status.name() == 'INACTIVE'}" value="INACTIVE">INACTIVE</option>
+                            <option th:selected="${employee.status != null and employee.status.name() == 'SUSPENDED'}" value="SUSPENDED">SUSPENDED</option>
+                        </select>
+                        <button type="submit"
+                                th:form="'statusForm-' + ${employee.id}"
+                                class="btn btn-success btn-sm mt-1">Change</button>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- end content-wrapper -->
+</div>
+</body>
+</html>
