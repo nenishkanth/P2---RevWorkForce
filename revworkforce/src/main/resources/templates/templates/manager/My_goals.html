@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+
+<div th:fragment="content">
+
+<style>
+
+/* ===== PAGE LAYOUT ===== */
+.my-goals-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2rem;
+    border-left: 6px solid #0f766e;
+    padding-left: 1.2rem;
+}
+
+/* ===== ADD GOAL FORM ===== */
+.add-goal-card {
+    background: linear-gradient(135deg, rgba(15,118,110,0.06), rgba(45,212,191,0.04));
+    border: 1px solid rgba(15,118,110,0.2);
+    border-radius: 20px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.add-goal-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f766e;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.8rem;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.form-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.form-group input,
+.form-group select {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+    background: white;
+    transition: all 0.2s;
+    font-family: inherit;
+    color: #1e293b;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15,118,110,0.12);
+}
+
+.btn-add-goal {
+    background: linear-gradient(145deg, #0f766e, #0b5e57);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.68rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.btn-add-goal:hover {
+    background: linear-gradient(145deg, #0b5e57, #0f766e);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15,118,110,0.3);
+}
+
+/* ===== GOALS LIST ===== */
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.goal-card {
+    background: white;
+    border: 1px solid #e8edf5;
+    border-radius: 18px;
+    padding: 1.3rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    transition: all 0.25s;
+    position: relative;
+}
+
+.goal-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+    transform: translateY(-2px);
+}
+
+/* Deadline warning border */
+.goal-card.deadline-warning {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(90deg, #fffbeb, white 8%);
+}
+
+.goal-card.deadline-critical {
+    border-left: 4px solid #ef4444;
+    background: linear-gradient(90deg, #fff1f2, white 8%);
+}
+
+.goal-card.goal-completed {
+    opacity: 0.65;
+}
+
+.goal-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+}
+
+.goal-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.82rem;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+
+.goal-meta .target-date {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.days-left {
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+.days-left.safe     { background: #d1fae5; color: #065f46; }
+.days-left.warning  { background: #fef3c7; color: #92400e; }
+.days-left.critical { background: #fee2e2; color: #991b1b; }
+.days-left.overdue  { background: #f1f5f9; color: #64748b; }
+
+/* Priority badge */
+.priority-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.priority-chip.HIGH    { background: #fee2e2; color: #b91c1c; }
+.priority-chip.MEDIUM  { background: #fef3c7; color: #b45309; }
+.priority-chip.LOW     { background: #d1fae5; color: #065f46; }
+.priority-chip.NOT_SET { background: #f1f5f9; color: #64748b; }
+
+/* Status badge */
+.status-chip {
+    display: inline-block;
+    padding: 0.25rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.status-chip.NOT_STARTED { background: #e9eef4; color: #475569; }
+.status-chip.IN_PROGRESS { background: #fef3c7; color: #b45309; }
+.status-chip.COMPLETED   { background: #d1fae5; color: #065f46; }
+.status-chip.ON_HOLD     { background: #f1e8ff; color: #7c3aed; }
+.status-chip.CANCELLED   { background: #f1f5f9; color: #94a3b8; }
+
+/* Action buttons */
+.goal-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-icon {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #475569;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.btn-icon:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.btn-icon.danger:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+/* ===== MODALS ===== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+    background: white;
+    border-radius: 22px;
+    padding: 2rem 2.2rem;
+    width: 360px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+    from { opacity:0; transform: scale(0.95) translateY(-10px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.modal-box h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1.2rem;
+}
+
+.modal-box select {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    margin-bottom: 1.2rem;
+    background: #f8fafd;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 30px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-save {
+    background: linear-gradient(145deg, #0f766e, #0b5e57);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.btn-save:hover { background: linear-gradient(145deg, #0b5e57, #0f766e); }
+
+/* ===== DEADLINE TOAST POPUP ===== */
+#deadline-toast-container {
+    position: fixed;
+    top: 88px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.deadline-toast {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem 1.3rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    min-width: 300px;
+    max-width: 360px;
+    border-left: 5px solid #f59e0b;
+    pointer-events: all;
+    animation: toastSlide 0.35s ease;
+}
+
+.deadline-toast.critical { border-left-color: #ef4444; }
+
+@keyframes toastSlide {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.toast-body .toast-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #0f172a;
+    margin-bottom: 0.15rem;
+}
+
+.toast-body .toast-msg {
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.toast-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+    font-style: italic;
+    background: #f8fafd;
+    border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .goal-card { grid-template-columns: 1fr; gap: 0.8rem; }
+}
+
+</style>
+
+<div class="my-goals-wrapper">
+
+    <h2 class="page-title">📋 My Goals</h2>
+
+    <!-- ===== ADD GOAL FORM ===== -->
+    <div class="add-goal-card">
+        <h3>➕ Add New Goal</h3>
+        <form th:action="@{/manager/my-goals/create}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="description">Goal Description</label>
+                    <input type="text" id="description" name="description"
+                           placeholder="e.g., Complete Q2 performance reviews" required>
+                </div>
+                <div class="form-group">
+                    <label for="targetDate">Target Date</label>
+                    <input type="date" id="targetDate" name="targetDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority">
+                        <option value="HIGH">🔴 High</option>
+                        <option value="MEDIUM" selected>🟡 Medium</option>
+                        <option value="LOW">🟢 Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-add-goal">Add Goal</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== GOALS LIST ===== -->
+    <div class="section-title">Your Goals</div>
+
+    <div class="goals-list" th:if="${!#lists.isEmpty(myGoals)}">
+
+        <div th:each="goal : ${myGoals}"
+             th:classappend="${goal.status.name() == 'COMPLETED'} ? 'goal-completed' : ''"
+             class="goal-card"
+             th:attr="data-target=${goal.targetDate}">
+
+            <!-- Goal Info -->
+            <div class="goal-info">
+                <h4 th:text="${goal.description}">Goal description</h4>
+                <div class="goal-meta">
+                    <span class="target-date">
+                        📅 <span th:text="${goal.targetDate}">2025-12-31</span>
+                    </span>
+                    <span class="days-left"
+                          th:attr="data-date=${goal.targetDate}">
+                        — days left
+                    </span>
+                </div>
+            </div>
+
+            <!-- Priority -->
+            <div>
+                <span class="priority-chip"
+                      th:classappend="${goal.priority != null ? goal.priority.name() : 'NOT_SET'}"
+                      th:text="${goal.priority != null ? goal.priority.name() : 'NOT SET'}">
+                    MEDIUM
+                </span>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <span class="status-chip"
+                      th:classappend="${goal.status.name()}"
+                      th:text="${goal.status}">
+                    NOT_STARTED
+                </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="goal-actions">
+                <!-- Change Priority -->
+                <button type="button" class="btn-icon open-priority-modal"
+                        th:attr="data-id=${goal.id}, data-priority=${goal.priority != null ? goal.priority.name() : 'MEDIUM'}">
+                    🎯 Priority
+                </button>
+                <!-- Change Status -->
+                <button type="button" class="btn-icon open-status-modal"
+                        th:attr="data-id=${goal.id}, data-status=${goal.status.name()}">
+                    📊 Status
+                </button>
+                <!-- Delete -->
+                <form th:action="@{'/manager/my-goals/delete/' + ${goal.id}}" method="post"
+                      style="display:inline;"
+                      onsubmit="return confirm('Delete this goal?')">
+                    <button type="submit" class="btn-icon danger">🗑</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="empty-state" th:if="${#lists.isEmpty(myGoals)}">
+        No goals yet. Add your first goal above!
+    </div>
+
+</div>
+
+<!-- ===== PRIORITY MODAL ===== -->
+<div class="modal-overlay" id="priorityModal">
+    <div class="modal-box">
+        <h3>🎯 Change Priority</h3>
+        <form id="priorityForm" method="post">
+            <select name="priority" id="prioritySelect">
+                <option value="HIGH">🔴 High</option>
+                <option value="MEDIUM">🟡 Medium</option>
+                <option value="LOW">🟢 Low</option>
+            </select>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal('priorityModal')">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== STATUS MODAL ===== -->
+<div class="modal-overlay" id="statusModal">
+    <div class="modal-box">
+        <h3>📊 Update Status</h3>
+        <form id="statusForm" method="post">
+            <select name="status" id="statusSelect">
+                <option value="NOT_STARTED">Not Started</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="ON_HOLD">On Hold</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal('statusModal')">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== DEADLINE TOAST CONTAINER ===== -->
+<div id="deadline-toast-container"></div>
+
+<script>
+// ===== MODAL LOGIC =====
+document.addEventListener('click', function(e) {
+    var pBtn = e.target.closest('.open-priority-modal');
+    if (pBtn) {
+        document.getElementById('priorityForm').action =
+            '/manager/my-goals/update-priority/' + pBtn.getAttribute('data-id');
+        document.getElementById('prioritySelect').value = pBtn.getAttribute('data-priority');
+        document.getElementById('priorityModal').classList.add('active');
+    }
+
+    var sBtn = e.target.closest('.open-status-modal');
+    if (sBtn) {
+        document.getElementById('statusForm').action =
+            '/manager/my-goals/update-status/' + sBtn.getAttribute('data-id');
+        document.getElementById('statusSelect').value = sBtn.getAttribute('data-status');
+        document.getElementById('statusModal').classList.add('active');
+    }
+});
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+// Close modal on backdrop click
+['priorityModal','statusModal'].forEach(function(id) {
+    document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) closeModal(id);
+    });
+});
+
+// ===== DAYS LEFT BADGES =====
+document.querySelectorAll('.days-left[data-date]').forEach(function(el) {
+    var target = new Date(el.getAttribute('data-date'));
+    target.setHours(0,0,0,0);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+
+    if (diff < 0) {
+        el.textContent = 'Overdue';
+        el.classList.add('overdue');
+        el.closest('.goal-card').classList.add('deadline-critical');
+    } else if (diff === 0) {
+        el.textContent = 'Due today!';
+        el.classList.add('critical');
+        el.closest('.goal-card').classList.add('deadline-critical');
+    } else if (diff <= 3) {
+        el.textContent = diff + ' day' + (diff === 1 ? '' : 's') + ' left';
+        el.classList.add('critical');
+        el.closest('.goal-card').classList.add('deadline-critical');
+    } else if (diff <= 7) {
+        el.textContent = diff + ' days left';
+        el.classList.add('warning');
+        el.closest('.goal-card').classList.add('deadline-warning');
+    } else {
+        el.textContent = diff + ' days left';
+        el.classList.add('safe');
+    }
+});
+
+// ===== DEADLINE TOAST NOTIFICATIONS =====
+(function() {
+    var toastContainer = document.getElementById('deadline-toast-container');
+    var toastsShown = 0;
+
+    document.querySelectorAll('.goal-card').forEach(function(card) {
+        // Skip completed/cancelled goals
+        var statusEl = card.querySelector('.status-chip');
+        if (statusEl) {
+            var s = statusEl.textContent.trim();
+            if (s === 'COMPLETED' || s === 'CANCELLED') return;
+        }
+
+        var daysEl = card.querySelector('.days-left[data-date]');
+        if (!daysEl) return;
+
+        var target = new Date(daysEl.getAttribute('data-date'));
+        target.setHours(0,0,0,0);
+        var today = new Date(); today.setHours(0,0,0,0);
+        var diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+
+        var descEl = card.querySelector('.goal-info h4');
+        var desc = descEl ? descEl.textContent.trim() : 'A goal';
+
+        var isCritical = false;
+        var title = '';
+        var msg = '';
+
+        if (diff < 0) {
+            isCritical = true;
+            title = '⚠️ Goal Overdue!';
+            msg = '"' + desc + '" passed its deadline ' + Math.abs(diff) + ' day(s) ago.';
+        } else if (diff === 0) {
+            isCritical = true;
+            title = '🔴 Due Today!';
+            msg = '"' + desc + '" is due today!';
+        } else if (diff <= 3) {
+            isCritical = true;
+            title = '🔴 Deadline Very Soon';
+            msg = '"' + desc + '" is due in ' + diff + ' day(s).';
+        } else if (diff <= 7) {
+            title = '🟡 Deadline Approaching';
+            msg = '"' + desc + '" is due in ' + diff + ' days.';
+        }
+
+        if (title && toastsShown < 5) {
+            toastsShown++;
+            var delay = toastsShown * 400;
+            setTimeout(function() {
+                var toast = document.createElement('div');
+                toast.className = 'deadline-toast' + (isCritical ? ' critical' : '');
+                toast.innerHTML =
+                    '<span class="toast-icon">' + (isCritical ? '🚨' : '⏰') + '</span>' +
+                    '<div class="toast-body">' +
+                        '<div class="toast-title">' + title + '</div>' +
+                        '<div class="toast-msg">' + msg + '</div>' +
+                    '</div>' +
+                    '<button class="toast-close" onclick="this.closest(\'.deadline-toast\').remove()">✕</button>';
+                toastContainer.appendChild(toast);
+
+                // Auto-dismiss after 8 seconds
+                setTimeout(function() {
+                    if (toast.parentNode) {
+                        toast.style.transition = 'opacity 0.5s, transform 0.5s';
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(40px)';
+                        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 500);
+                    }
+                }, 8000);
+            }, delay);
+        }
+    });
+})();
+</script>
+
+</div>
+
+</html>
