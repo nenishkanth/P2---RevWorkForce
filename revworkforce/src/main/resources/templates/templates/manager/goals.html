@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+
+<div th:fragment="content">
+
+<style>
+
+.goals-container{
+background:white;
+border-radius:24px;
+box-shadow:0 20px 35px -8px rgba(0,34,64,0.15),0 8px 18px -6px rgba(0,0,0,0.05);
+padding:2rem;
+}
+
+h2{
+font-size:1.8rem;
+font-weight:600;
+color:#0f172a;
+margin-bottom:1.5rem;
+border-left:6px solid #0f766e;
+padding-left:1.5rem;
+}
+
+.table-responsive{
+overflow-x:auto;
+border-radius:20px;
+border:1px solid #edf2f7;
+background:white;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:0.95rem;
+min-width:700px;
+}
+
+th{
+text-align:left;
+padding:1.2rem 1.5rem;
+background:#f8fafd;
+color:#334155;
+font-weight:600;
+font-size:0.85rem;
+text-transform:uppercase;
+border-bottom:1px solid #e2e8f0;
+}
+
+td{
+padding:1.2rem 1.5rem;
+border-bottom:1px solid #eef2f6;
+color:#1e293b;
+vertical-align:middle;
+}
+
+tbody tr:hover td{
+background-color:#f6f9ff;
+}
+
+/* Status badge */
+
+.status-badge{
+display:inline-block;
+padding:0.3rem 1rem;
+border-radius:40px;
+font-weight:600;
+font-size:0.75rem;
+text-transform:uppercase;
+}
+
+.status-badge.not-started{
+background:#e9eef4;
+color:#475569;
+}
+
+.status-badge.in-progress{
+background:#fef3c7;
+color:#b45309;
+}
+
+.status-badge.completed{
+background:#e3f7ec;
+color:#0b6b4f;
+}
+
+/* update form */
+
+.update-form{
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+/* dropdown */
+
+select{
+border:1px solid #e2e8f0;
+border-radius:30px;
+padding:6px 15px;
+font-size:0.85rem;
+background:white;
+cursor:pointer;
+position:relative;
+z-index:10;
+}
+
+select:focus{
+border-color:#0f766e;
+box-shadow:0 0 0 3px rgba(15,118,110,0.2);
+}
+
+/* update button */
+
+.btn-update{
+background:#0f766e;
+color:white;
+border:none;
+border-radius:30px;
+padding:6px 15px;
+font-size:0.85rem;
+cursor:pointer;
+}
+
+.btn-update:hover{
+background:#0b5e57;
+transform:translateY(-2px);
+}
+
+.empty-state{
+text-align:center;
+padding:3rem;
+color:#94a3b8;
+font-style:italic;
+}
+
+/* Priority badge */
+.priority-badge{
+display:inline-block;
+padding:0.3rem 1rem;
+border-radius:40px;
+font-weight:600;
+font-size:0.75rem;
+text-transform:uppercase;
+}
+.priority-badge.high{
+background:#fee2e2;
+color:#b91c1c;
+}
+.priority-badge.medium{
+background:#fef3c7;
+color:#b45309;
+}
+.priority-badge.low{
+background:#e3f7ec;
+color:#0b6b4f;
+}
+
+/* priority modal overlay */
+.modal-overlay{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.45);
+z-index:1000;
+justify-content:center;
+align-items:center;
+}
+.modal-overlay.active{
+display:flex;
+}
+.modal-box{
+background:white;
+border-radius:20px;
+padding:2rem;
+width:340px;
+box-shadow:0 20px 50px rgba(0,0,0,0.2);
+}
+.modal-box h3{
+font-size:1.1rem;
+font-weight:700;
+color:#0f172a;
+margin-bottom:1.2rem;
+}
+.modal-box select{
+width:100%;
+border:1px solid #e2e8f0;
+border-radius:12px;
+padding:8px 14px;
+font-size:0.9rem;
+margin-bottom:1.2rem;
+}
+.modal-actions{
+display:flex;
+gap:10px;
+justify-content:flex-end;
+}
+.btn-cancel{
+background:#f1f5f9;
+color:#475569;
+border:none;
+border-radius:30px;
+padding:7px 18px;
+font-size:0.85rem;
+cursor:pointer;
+}
+.btn-save{
+background:#0f766e;
+color:white;
+border:none;
+border-radius:30px;
+padding:7px 18px;
+font-size:0.85rem;
+cursor:pointer;
+}
+.btn-priority{
+background:#e0f2fe;
+color:#0369a1;
+border:none;
+border-radius:30px;
+padding:5px 13px;
+font-size:0.8rem;
+cursor:pointer;
+font-weight:600;
+margin-top:6px;
+}
+.btn-priority:hover{
+background:#bae6fd;
+}
+
+</style>
+
+
+<div class="goals-container">
+
+<h2>Team Goals</h2>
+
+<div class="table-responsive">
+
+<table>
+
+<thead>
+<tr>
+<th>Employee</th>
+<th>Description</th>
+<th>Target Date</th>
+<th>Priority</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="goal : ${goals}">
+
+<td th:text="${goal.employee.employeeId}"></td>
+
+<td th:text="${goal.description}"></td>
+
+<td th:text="${goal.targetDate}"></td>
+
+<td>
+  <span class="priority-badge"
+        th:classappend="${goal.priority == 'HIGH'} ? 'high' :
+                        (${goal.priority == 'MEDIUM'} ? 'medium' :
+                        (${goal.priority == 'LOW'} ? 'low' : 'medium'))"
+        th:text="${goal.priority != null ? goal.priority : 'NOT SET'}">
+  </span>
+  <br/>
+  <button type="button" class="btn-priority open-priority-modal"
+          th:attr="data-id=${goal.id}, data-priority=${goal.priority != null ? goal.priority : 'MEDIUM'}">
+    ✎ Change
+  </button>
+</td>
+
+<td>
+
+<span class="status-badge"
+      th:classappend="${goal.status == 'NOT_STARTED'} ? 'not-started' :
+                      (${goal.status == 'IN_PROGRESS'} ? 'in-progress' :
+                      (${goal.status == 'COMPLETED'} ? 'completed' : ''))"
+      th:text="${goal.status}">
+</span>
+
+</td>
+
+<td>
+
+<form th:action="@{'/manager/goals/update/' + ${goal.id}}"
+      method="post"
+      class="update-form">
+
+<select name="status">
+
+<option value="NOT_STARTED"
+        th:selected="${goal.status == 'NOT_STARTED'}">
+        NOT STARTED
+</option>
+
+<option value="IN_PROGRESS"
+        th:selected="${goal.status == 'IN_PROGRESS'}">
+        IN PROGRESS
+</option>
+
+<option value="COMPLETED"
+        th:selected="${goal.status == 'COMPLETED'}">
+        COMPLETED
+</option>
+
+</select>
+
+<button type="submit" class="btn-update">
+Update
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+<tr th:if="${#lists.isEmpty(goals)}">
+<td colspan="6" class="empty-state">No goals found</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- Priority Change Modal -->
+<div class="modal-overlay" id="priorityModal">
+  <div class="modal-box">
+    <h3>Change Goal Priority</h3>
+    <form id="priorityForm" method="post">
+      <select name="priority" id="prioritySelect">
+        <option value="HIGH">🔴 High</option>
+        <option value="MEDIUM">🟡 Medium</option>
+        <option value="LOW">🟢 Low</option>
+      </select>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closePriorityModal()">Cancel</button>
+        <button type="submit" class="btn-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.open-priority-modal');
+  if (btn) {
+    var goalId = btn.getAttribute('data-id');
+    var currentPriority = btn.getAttribute('data-priority');
+    document.getElementById('priorityForm').action = '/manager/goals/update-priority/' + goalId;
+    document.getElementById('prioritySelect').value = currentPriority;
+    document.getElementById('priorityModal').classList.add('active');
+  }
+});
+function closePriorityModal() {
+  document.getElementById('priorityModal').classList.remove('active');
+}
+document.getElementById('priorityModal').addEventListener('click', function(e) {
+  if (e.target === this) closePriorityModal();
+});
+</script>
+
+</div>
+
+</html>
