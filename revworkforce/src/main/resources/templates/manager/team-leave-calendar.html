@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ========== PROFESSIONAL TEAM LEAVE CALENDAR STYLING ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            border-left: 6px solid #0f766e;
+            padding-left: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 i {
+            color: #0f766e;
+            font-size: 1.4rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #eef2f6;
+            margin: 2rem 0;
+        }
+
+        /* Stats cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(15, 118, 110, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            background: white;
+            border-color: #0f766e;
+            box-shadow: 0 8px 20px -6px rgba(15, 118, 110, 0.2);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(15, 118, 110, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #0f766e;
+        }
+
+        .stat-content h4 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-content .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .stat-content .value small {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: 0.3rem;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+            margin: 1rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 600px;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.2rem;
+            background: #f8fafd;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-approved {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-rejected {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .badge-cancelled {
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        /* Conflict table specific */
+        .conflict-count {
+            font-weight: 600;
+            color: #0f766e;
+        }
+
+        .heatmap-bar {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            background: #e6f0ff;
+            color: #1d4ed8;
+            font-weight: 500;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body th:replace="~{layout/manager-base :: layout(~{::content})}">
+
+<div th:fragment="content" class="calendar-container">
+    <h2>Team Leave Calendar</h2>
+
+    <!-- TEAM AVAILABILITY STATS -->
+    <h3><i class="fas fa-users"></i> Team Availability</h3>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+            <div class="stat-content">
+                <h4>Total Team</h4>
+                <div class="value" th:text="${total}">15</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #10b981;"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <h4>Available Today</h4>
+                <div class="value" th:text="${available}">12 <small>members</small></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #ef4444;"><i class="fas fa-calendar-times"></i></div>
+            <div class="stat-content">
+                <h4>On Leave Today</h4>
+                <div class="value" th:text="${onLeave}">3 <small>members</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEAM LEAVE SCHEDULE TABLE -->
+    <h3><i class="fas fa-calendar-alt"></i> Team Leave Schedule</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Leave Type</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="leave : ${teamLeaves}">
+                    <td th:text="${leave.employee.firstName + ' ' + leave.employee.lastName}">John Doe</td>
+                    <td th:text="${leave.leaveType}">CASUAL</td>
+                    <td th:text="${leave.startDate}">2025-03-10</td>
+                    <td th:text="${leave.endDate}">2025-03-12</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${leave.status == 'APPROVED'} ? 'badge-approved' : 
+                                              (${leave.status == 'PENDING'} ? 'badge-pending' : 
+                                              (${leave.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                              th:text="${leave.status}">APPROVED</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(teamLeaves)}">
+                    <td colspan="5" class="empty-state">No leave schedules found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- LEAVE CONFLICT WARNING -->
+    <h3><i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Leave Conflict Warning</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Employees On Leave</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="entry : ${conflicts}">
+                    <td th:text="${entry.key}">2025-03-15</td>
+                    <td>
+                        <span class="conflict-count" th:text="${entry.value}">3 employees</span>
+                    </td>
+                </tr>
+                <tr th:if="${#maps.isEmpty(conflicts)}">
+                    <td colspan="2" class="empty-state">No conflicts detected</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- DEPARTMENT LEAVE HEATMAP -->
+    <h3><i class="fas fa-fire"></i> Department Leave Heatmap</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Leave Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="entry : ${heatmap}">
+                    <td th:text="${entry.key}">Engineering</td>
+                    <td>
+                        <span class="heatmap-bar" th:text="${entry.value}">5</span>
+                    </td>
+                </tr>
+                <tr th:if="${#maps.isEmpty(heatmap)}">
+                    <td colspan="2" class="empty-state">No data available</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

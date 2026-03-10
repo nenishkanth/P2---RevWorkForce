@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+<div th:fragment="content">
+    <style>
+        /* Additional styling for leave requests */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h2 {
+            margin-bottom: 0;
+        }
+
+        .btn-history {
+            background: white;
+            border: 1px solid var(--accent);
+            color: var(--navy);
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: var(--transition);
+        }
+
+        .btn-history:hover {
+            background: rgba(15, 118, 110, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15, 118, 110, 0.15);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 1100px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            background: #f8fafd;
+            color: var(--navy-light);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        .insufficient-row {
+            background-color: #fff1f0;
+        }
+
+        .employee-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .employee-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-approved {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-rejected {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .badge-cancelled {
+            background: #e9eef4;
+            color: #475569;
+        }
+
+        .leave-balance {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .balance-item {
+            background: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .balance-item i {
+            color: var(--accent);
+            font-size: 0.7rem;
+        }
+
+        .balance-item.warning {
+            background: #fee9e7;
+            color: #b34033;
+        }
+
+        .balance-item.warning i {
+            color: #b34033;
+        }
+
+        .action-forms {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .action-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            width: 180px;
+        }
+
+        .action-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            width: fit-content;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+        .btn-approve:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .btn-approve:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .insufficient-warning {
+            color: #b34033;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="page-header">
+        <h2>Team Leave Requests</h2>
+        <a href="/manager/leaves/history" class="btn-history">
+            <i class="fas fa-history"></i> View Leave History
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Leave Balance</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="leave : ${teamLeaves}"
+                    th:classappend="${(leave.leaveType.name() == 'CASUAL' and leave.employee.leaveBalance.casualLeave == 0) 
+                                    or (leave.leaveType.name() == 'SICK' and leave.employee.leaveBalance.sickLeave == 0)
+                                    or (leave.leaveType.name() == 'PAID' and leave.employee.leaveBalance.paidLeave == 0)} 
+                                    ? 'insufficient-row' : ''">
+                    
+                    <!-- Employee -->
+                    <td>
+                        <div class="employee-info">
+                            <span class="employee-name" 
+                                  th:text="${leave.employee.firstName + ' ' + leave.employee.lastName}">John Doe</span>
+                            <span class="employee-id" th:text="${leave.employee.employeeId}">EMP1013</span>
+                        </div>
+                    </td>
+
+                    <!-- Start Date -->
+                    <td th:text="${leave.startDate}">2025-03-10</td>
+
+                    <!-- End Date -->
+                    <td th:text="${leave.endDate}">2025-03-12</td>
+
+                    <!-- Leave Type -->
+                    <td th:text="${leave.leaveType}">CASUAL</td>
+
+                    <!-- Status -->
+                    <td>
+                        <span class="badge"
+                              th:classappend="${leave.status == 'PENDING'} ? 'badge-pending' : 
+                                              (${leave.status == 'APPROVED'} ? 'badge-approved' : 
+                                              (${leave.status == 'REJECTED'} ? 'badge-rejected' : 'badge-cancelled'))"
+                              th:text="${leave.status}">PENDING</span>
+                    </td>
+
+                    <!-- Leave Balance -->
+                    <td>
+                        <div class="leave-balance">
+                            <span class="balance-item" 
+                                  th:classappend="${leave.leaveType.name() == 'CASUAL' and leave.employee.leaveBalance.casualLeave == 0} ? 'warning' : ''">
+                                <i class="fas fa-coffee"></i> Casual: <span th:text="${leave.employee.leaveBalance.casualLeave}">12</span>
+                            </span>
+                            <span class="balance-item"
+                                  th:classappend="${leave.leaveType.name() == 'SICK' and leave.employee.leaveBalance.sickLeave == 0} ? 'warning' : ''">
+                                <i class="fas fa-thermometer-half"></i> Sick: <span th:text="${leave.employee.leaveBalance.sickLeave}">8</span>
+                            </span>
+                            <span class="balance-item"
+                                  th:classappend="${leave.leaveType.name() == 'PAID' and leave.employee.leaveBalance.paidLeave == 0} ? 'warning' : ''">
+                                <i class="fas fa-money-bill"></i> Paid: <span th:text="${leave.employee.leaveBalance.paidLeave}">5</span>
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="action-forms">
+                            <!-- Approve Form -->
+                            <form th:action="@{'/manager/leaves/approve/' + ${leave.id}}" method="post" class="action-form">
+                                <input type="text" name="comment" placeholder="Approval comment" class="action-input">
+                                <button type="submit" 
+                                        class="btn-icon btn-approve"
+                                        th:disabled="${(leave.leaveType.name() == 'CASUAL' and leave.employee.leaveBalance.casualLeave == 0) 
+                                                    or (leave.leaveType.name() == 'SICK' and leave.employee.leaveBalance.sickLeave == 0)
+                                                    or (leave.leaveType.name() == 'PAID' and leave.employee.leaveBalance.paidLeave == 0)}">
+                                    <i class="fas fa-check-circle"></i> Approve
+                                </button>
+                            </form>
+
+                            <!-- Reject Form -->
+                            <form th:action="@{'/manager/leaves/reject/' + ${leave.id}}" method="post" class="action-form">
+                                <input type="text" name="comment" placeholder="Rejection reason" class="action-input">
+                                <button type="submit" class="btn-icon btn-reject">
+                                    <i class="fas fa-times-circle"></i> Reject
+                                </button>
+                            </form>
+
+                            <!-- Insufficient Balance Warning -->
+                            <div th:if="${(leave.leaveType.name() == 'CASUAL' and leave.employee.leaveBalance.casualLeave == 0) 
+                                        or (leave.leaveType.name() == 'SICK' and leave.employee.leaveBalance.sickLeave == 0)
+                                        or (leave.leaveType.name() == 'PAID' and leave.employee.leaveBalance.paidLeave == 0)}"
+                                 class="insufficient-warning">
+                                <i class="fas fa-exclamation-triangle"></i> No balance available
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Empty state -->
+                <tr th:if="${#lists.isEmpty(teamLeaves)}">
+                    <td colspan="7" class="empty-state">No pending leave requests</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>

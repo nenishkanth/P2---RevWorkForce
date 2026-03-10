@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/manager-base :: layout(~{::content})}">
+<div th:fragment="content">
+    <style>
+        /* Professional styling for Notifications */
+        .notifications-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -8px rgba(0, 34, 64, 0.15), 0 8px 18px -6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            border-left: 6px solid #0f766e;
+            padding-left: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: #f8fafd;
+            border-radius: 20px;
+            color: #64748b;
+            font-style: italic;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            background: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 700px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            background: #f8fafd;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #f6f9ff;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-read {
+            background: #e3f7ec;
+            color: #0b6b4f;
+        }
+
+        .badge-unread {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* Action buttons */
+        .action-form {
+            display: inline-block;
+            margin-right: 0.3rem;
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-icon i {
+            font-size: 0.9rem;
+        }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .btn-mark {
+            background: #0f766e;
+            border-color: #0f766e;
+            color: white;
+        }
+
+        .btn-mark:hover {
+            background: #0b5e57;
+            border-color: #0b5e57;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .notifications-container {
+                padding: 1.5rem;
+            }
+            .table td, .table th {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <!-- Font Awesome for icons (if not already in layout) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <div class="notifications-container">
+        <h2>Notifications</h2>
+
+        <div th:if="${#lists.isEmpty(notifications)}" class="empty-state">
+            <i class="fas fa-bell" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>No notifications available.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(notifications)}" class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="n : ${notifications}">
+                        <td th:text="${n.message}">Your leave request has been approved.</td>
+                        <td th:text="${n.createdAt}">2025-03-07 10:30</td>
+                        <td>
+                            <span th:if="${n.read}" class="badge badge-read">Read</span>
+                            <span th:unless="${n.read}" class="badge badge-unread">Unread</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/manager/notifications/read/{id}(id=${n.id})}" method="post" class="action-form">
+                                <button class="btn-icon btn-mark" th:if="${!n.read}">
+                                    <i class="fas fa-check"></i> Mark Read
+                                </button>
+                                <button class="btn-icon" th:if="${n.read}" disabled style="opacity:0.5; cursor:not-allowed;">
+                                    <i class="fas fa-check"></i> Mark Read
+                                </button>
+                            </form>
+                            <form th:action="@{/manager/notifications/delete/{id}(id=${n.id})}" method="post" class="action-form">
+                                <button class="btn-icon btn-delete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</html>
