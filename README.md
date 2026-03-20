@@ -56,7 +56,7 @@ RevWorkForce is a full-stack **Human Resource Management System** built with Spr
 | Layer | Technology | Details |
 |-------|-----------|---------|
 | Backend | Spring Boot 4.0.3 | MVC architecture, REST + MVC controllers |
-| Language | Java 17 | LTS release |
+| Language | Java 21 | LTS release |
 | Security | Spring Security + JWT | BCrypt, role-based access, session management |
 | ORM | Hibernate / JPA | Auto schema update, JPQL queries |
 | Database | Oracle DB (XEPDB1) | ojdbc11, port 1521 |
@@ -137,7 +137,7 @@ revworkforce/
 
 ### Prerequisites
 
-- Java 17 JDK
+- Java 21 JDK
 - Apache Maven 3.8+
 - Oracle Database XE (or any Oracle DB instance)
 - Git
@@ -256,8 +256,6 @@ GET  /employee/reviews         → View performance reviews
 ### Authentication
 - Form-based login via Spring Security at `POST /login`
 - Passwords hashed with **BCryptPasswordEncoder** (strength 10)
-- **JWT tokens** generated via jjwt 0.11.5 for API authentication
-- Remember-me cookie support for persistent sessions
 
 ### Route Guards
 ```
@@ -293,11 +291,6 @@ Contributions are welcome!
 4. Push to the branch: `git push origin feature/your-feature-name`
 5. Open a Pull Request against the `main` branch
 
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — you are free to use, modify and distribute it with attribution.
 
 ---
 
